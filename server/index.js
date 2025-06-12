@@ -128,6 +128,8 @@ app.get('/api/models', async (req, res) => {
 
 app.post('/api/models', async (req, res) => {
   const model = await Model.create(req.body);
+  // Create root node automatically
+  await Node.create({ name: 'Raiz', modelId: model.id, parentId: null });
   res.json(model);
 });
 
@@ -260,6 +262,10 @@ app.put('/api/nodes/:id', async (req, res) => {
 });
 
 app.delete('/api/nodes/:id', async (req, res) => {
+  const node = await Node.findByPk(req.params.id);
+  if (node && node.name === 'Raiz' && node.parentId === null) {
+    return res.status(400).json({ error: 'No se puede eliminar el nodo raiz' });
+  }
   await Node.destroy({ where: { id: req.params.id } });
   res.json({});
 });

@@ -72,8 +72,12 @@ export default function NodeList({ modelId, open, onClose }) {
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/nodes/${id}`);
-      load();
+      try {
+        await axios.delete(`/api/nodes/${id}`);
+        load();
+      } catch (e) {
+        alert(e.response?.data?.error || 'Error');
+      }
     }
   };
 
@@ -101,7 +105,14 @@ export default function NodeList({ modelId, open, onClose }) {
               {n.name}
               <Button size="small" onClick={() => openCreate(n.id)}>Añadir</Button>
               <Button size="small" onClick={() => openEdit(n)}>Editar</Button>
-              <Button size="small" color="error" onClick={() => handleDelete(n.id)}>Eliminar</Button>
+              <Button
+                size="small"
+                color="error"
+                onClick={() => handleDelete(n.id)}
+                disabled={n.name === 'Raiz' && n.parentId === null}
+              >
+                Eliminar
+              </Button>
             </div>
           }
         >
