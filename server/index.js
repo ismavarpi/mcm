@@ -261,12 +261,16 @@ app.put('/api/nodes/:id', async (req, res) => {
   res.json(node);
 });
 
-app.delete('/api/nodes/:id', async (req, res) => {
-  const node = await Node.findByPk(req.params.id);
-  if (node && node.name === 'Raiz' && node.parentId === null) {
-    return res.status(400).json({ error: 'No se puede eliminar el nodo raiz' });
+async function deleteNodeRecursive(id) {
+  const children = await Node.findAll({ where: { parentId: id } });
+  for (const child of children) {
+    await deleteNodeRecursive(child.id);
   }
-  await Node.destroy({ where: { id: req.params.id } });
+  await Node.destroy({ where: { id } });
+}
+
+app.delete('/api/nodes/:id', async (req, res) => {
+  await deleteNodeRecursive(req.params.id);
   res.json({});
 });
 
