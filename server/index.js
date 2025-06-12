@@ -194,8 +194,16 @@ app.put('/api/nodes/:id', async (req, res) => {
   res.json(node);
 });
 
+async function deleteNodeRecursive(id) {
+  const children = await Node.findAll({ where: { parentId: id } });
+  for (const child of children) {
+    await deleteNodeRecursive(child.id);
+  }
+  await Node.destroy({ where: { id } });
+}
+
 app.delete('/api/nodes/:id', async (req, res) => {
-  await Node.destroy({ where: { id: req.params.id } });
+  await deleteNodeRecursive(req.params.id);
   res.json({});
 });
 

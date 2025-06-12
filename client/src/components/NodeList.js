@@ -71,7 +71,7 @@ export default function NodeList({ modelId, open, onClose }) {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Eliminar elemento?')) {
+    if (window.confirm('¿Eliminar este nodo y todos sus nodos hijos?')) {
       await axios.delete(`/api/nodes/${id}`);
       load();
     }
