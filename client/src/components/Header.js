@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-export default function Header({ onAdmin }) {
+export default function Header({ appName, onAdmin, onParams }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleSettingsClick = (event) => {
@@ -22,7 +22,7 @@ export default function Header({ onAdmin }) {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          MCM
+          {appName}
         </Typography>
         <MenuItem onClick={() => { handleClose(); }}>Modelos generados</MenuItem>
         <IconButton color="inherit" onClick={handleSettingsClick}>
@@ -30,6 +30,7 @@ export default function Header({ onAdmin }) {
         </IconButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={() => { handleClose(); onAdmin(); }}>Modelos</MenuItem>
+          <MenuItem onClick={() => { handleClose(); onParams(); }}>Parámetros</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>
