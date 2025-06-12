@@ -26,6 +26,17 @@ This repository contains a simple React/Node application.
 
 The application shows a homepage with a header and menus. Use the administration menu (gear icon) to manage models (name and author). CRUD operations are provided via popups. Data is retrieved via REST API.
 
+
+## Automated deployment
+
+The folder `ansible` contains a sample playbook that installs Node.js,
+clones this repository and starts the services using `pm2`.
+To run the playbook configure the inventory and execute:
+
+```bash
+ansible-playbook -i ansible/inventory ansible/deploy.yml
+```
+
 ## Despliegue en un servidor
 
 A continuación se muestra un ejemplo de despliegue en un servidor Linux. Se asume que el servidor cuenta con Node.js, npm y MariaDB instalados.
@@ -149,3 +160,4 @@ También es posible ejecutar la aplicación mediante contenedores Docker. A cont
    - API REST: `http://localhost:3001`
 
 Con Docker es sencillo detener todo el entorno con `docker compose down` o reiniciarlo de nuevo cuando se necesite.
+
