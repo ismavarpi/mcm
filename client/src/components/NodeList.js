@@ -13,6 +13,8 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import Chip from '@mui/material/Chip';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { jsPDF } from 'jspdf';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
@@ -53,15 +55,28 @@ export default function NodeList({ modelId, open, onClose }) {
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
   const [selectedTags, setSelectedTags] = React.useState([]);
+  const [teams, setTeams] = React.useState([]);
+  const [roles, setRoles] = React.useState({});
+  const [rasciLines, setRasciLines] = React.useState([]);
   const [categories, setCategories] = React.useState([]);
   const [attachments, setAttachments] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
 
   const load = async () => {
-    const [nodesRes, tagsRes] = await Promise.all([
+    const [nodesRes, tagsRes, teamsRes] = await Promise.all([
       axios.get(`/api/models/${modelId}/nodes`),
-      axios.get(`/api/models/${modelId}/tags`)
+      axios.get(`/api/models/${modelId}/tags`),
+      axios.get(`/api/models/${modelId}/teams`)
     ]);
+    const rolesMap = {};
+    await Promise.all(
+      teamsRes.data.map(async t => {
+        const r = await axios.get(`/api/teams/${t.id}/roles`);
+        rolesMap[t.id] = r.data;
+      })
+    );
+    setTeams(teamsRes.data);
+    setRoles(rolesMap);
     setNodes(nodesRes.data);
     setTags(tagsRes.data);
   };
@@ -79,10 +94,17 @@ export default function NodeList({ modelId, open, onClose }) {
   React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
 
   const handleSave = async () => {
+    const countA = rasciLines.filter(l => l.responsibilities.includes('A')).length;
+    const countR = rasciLines.filter(l => l.responsibilities.includes('R')).length;
+    if (countA > 1 || countR > 1) {
+      alert('Solo puede haber un rol con responsabilidad A y uno con responsabilidad R');
+      return;
+    }
     const payload = {
       ...form,
       parentId: form.parentId || null,
       tagIds: selectedTags,
+      rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
     if (editing) {
       await axios.put(`/api/nodes/${editing.id}`, payload);
@@ -92,6 +114,7 @@ export default function NodeList({ modelId, open, onClose }) {
     setDialogOpen(false);
     setForm({ name: '', parentId: '' });
     setSelectedTags([]);
+    setRasciLines([]);
     setEditing(null);
     load();
   };
@@ -103,10 +126,20 @@ export default function NodeList({ modelId, open, onClose }) {
     }
   };
 
-  const openEdit = (node) => {
+  const openEdit = async (node) => {
     setEditing(node);
     setForm({ name: node.name, parentId: node.parentId || '' });
     setSelectedTags(node.tags ? node.tags.map(t => t.id) : []);
+    const rasciRes = await axios.get(`/api/nodes/${node.id}/rascis`);
+    const sorted = rasciRes.data.sort((a,b)=>{
+      const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
+      const tb = teams.find(t=>t.id===b.Role.teamId)||{order:0};
+      if(ta.order!==tb.order) return ta.order-tb.order;
+      const ra = roles[ta.id]?.find(r=>r.id===a.roleId)||{order:0};
+      const rb = roles[tb.id]?.find(r=>r.id===b.roleId)||{order:0};
+      return ra.order-rb.order;
+    });
+    setRasciLines(sorted.map(r=>({id:r.id, teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')})));
     loadAttachments(node.id);
     setDialogOpen(true);
   };
@@ -115,6 +148,7 @@ export default function NodeList({ modelId, open, onClose }) {
     setEditing(null);
     setForm({ name: '', parentId });
     setSelectedTags([]);
+    setRasciLines([]);
     setAttachments([]);
     setAttForm({ categoryId: '', name: '', file: null });
     setDialogOpen(true);
@@ -239,6 +273,67 @@ export default function NodeList({ modelId, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            {rasciLines.map((line, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
+                <FormControl sx={{ mr: 1, minWidth: 120 }}>
+                  <InputLabel>Equipo</InputLabel>
+                  <Select
+                    label="Equipo"
+                    value={line.teamId || ''}
+                    onChange={e => {
+                      const newLines = [...rasciLines];
+                      newLines[idx].teamId = e.target.value;
+                      newLines[idx].roleId = '';
+                      setRasciLines(newLines);
+                    }}
+                  >
+                    {teams.map(t => (
+                      <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl sx={{ mr: 1, minWidth: 120 }}>
+                  <InputLabel>Rol</InputLabel>
+                  <Select
+                    label="Rol"
+                    value={line.roleId || ''}
+                    onChange={e => {
+                      const newLines = [...rasciLines];
+                      newLines[idx].roleId = e.target.value;
+                      setRasciLines(newLines);
+                    }}
+                  >
+                    {(roles[line.teamId] || []).map(r => (
+                      <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {['R','A','S','C','I'].map(ch => (
+                  <FormControlLabel
+                    key={ch}
+                    control={
+                      <Checkbox
+                        checked={line.responsibilities.includes(ch)}
+                        onChange={e => {
+                          const newLines = [...rasciLines];
+                          if (e.target.checked) {
+                            newLines[idx].responsibilities.push(ch);
+                          } else {
+                            newLines[idx].responsibilities = newLines[idx].responsibilities.filter(c => c !== ch);
+                          }
+                          setRasciLines(newLines);
+                        }}
+                      />
+                    }
+                    label={ch}
+                  />
+                ))}
+                <Button color="error" onClick={() => {
+                  setRasciLines(rasciLines.filter((_,i)=>i!==idx));
+                }}>Eliminar</Button>
+              </div>
+            ))}
+            <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
             {editing && (
               <>
                 <div style={{ marginTop: '1rem' }}>

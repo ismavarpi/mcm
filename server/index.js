@@ -65,6 +65,20 @@ Tag.belongsTo(Model, { foreignKey: 'modelId' });
 
 // Team definition
 const Team = sequelize.define('Team', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  modelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
 // Node definition
 const Node = sequelize.define('Node', {
   name: {
@@ -111,6 +125,9 @@ const NodeTag = sequelize.define('NodeTag', {});
 Node.belongsToMany(Tag, { through: NodeTag, as: 'tags', foreignKey: 'nodeId' });
 Tag.belongsToMany(Node, { through: NodeTag, as: 'nodes', foreignKey: 'tagId' });
 
+// RASCI relation between nodes and roles
+const NodeRasci = sequelize.define('NodeRasci', {
+  responsibilities: {
 const NodeAttachment = sequelize.define('NodeAttachment', {
   name: {
     type: DataTypes.STRING,
@@ -121,6 +138,10 @@ const NodeAttachment = sequelize.define('NodeAttachment', {
     allowNull: false,
   }
 });
+Node.hasMany(NodeRasci, { as: 'rascis', foreignKey: 'nodeId' });
+NodeRasci.belongsTo(Node, { foreignKey: 'nodeId' });
+NodeRasci.belongsTo(Role, { foreignKey: 'roleId' });
+Role.hasMany(NodeRasci, { foreignKey: 'roleId' });
 
 DocumentCategory.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'categoryId' });
 NodeAttachment.belongsTo(DocumentCategory, { foreignKey: 'categoryId' });
@@ -304,26 +325,46 @@ app.delete('/api/roles/:id', async (req, res) => {
 app.get('/api/models/:modelId/nodes', async (req, res) => {
   const nodes = await Node.findAll({
     where: { modelId: req.params.modelId },
-    include: { model: Tag, as: 'tags' }
+    include: [
+      { model: Tag, as: 'tags' },
+      { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
+    ]
   });
   res.json(nodes);
 });
 
 app.post('/api/models/:modelId/nodes', async (req, res) => {
-  const { tagIds, ...data } = req.body;
+  const { tagIds, rasci, ...data } = req.body;
   const node = await Node.create({ ...data, modelId: req.params.modelId });
   if (tagIds) await node.setTags(tagIds);
-  const withTags = await Node.findByPk(node.id, { include: { model: Tag, as: 'tags' } });
-  res.json(withTags);
+  if (rasci && rasci.length) {
+    for (const line of rasci) {
+      await NodeRasci.create({ nodeId: node.id, roleId: line.roleId, responsibilities: line.responsibilities.join('') });
+    }
+  }
+  const withAssociations = await Node.findByPk(node.id, { include: [
+    { model: Tag, as: 'tags' },
+    { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
+  ] });
+  res.json(withAssociations);
 });
 
 app.put('/api/nodes/:id', async (req, res) => {
-  const { tagIds, ...data } = req.body;
+  const { tagIds, rasci, ...data } = req.body;
   await Node.update(data, { where: { id: req.params.id } });
   const node = await Node.findByPk(req.params.id);
   if (tagIds) await node.setTags(tagIds);
-  const withTags = await Node.findByPk(node.id, { include: { model: Tag, as: 'tags' } });
-  res.json(withTags);
+  if (rasci) {
+    await NodeRasci.destroy({ where: { nodeId: node.id } });
+    for (const line of rasci) {
+      await NodeRasci.create({ nodeId: node.id, roleId: line.roleId, responsibilities: line.responsibilities.join('') });
+    }
+  }
+  const withAssociations = await Node.findByPk(node.id, { include: [
+    { model: Tag, as: 'tags' },
+    { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
+  ] });
+  res.json(withAssociations);
 });
 
 app.get('/api/nodes/:id/tags', async (req, res) => {
@@ -340,6 +381,12 @@ app.post('/api/nodes/:id/tags', async (req, res) => {
   res.json(tags);
 });
 
+app.get('/api/nodes/:id/rascis', async (req, res) => {
+  const rascis = await NodeRasci.findAll({
+    where: { nodeId: req.params.id },
+    include: { model: Role, include: Team }
+  });
+  res.json(rascis);
 // Attachment routes
 app.get('/api/nodes/:nodeId/attachments', async (req, res) => {
   const attachments = await NodeAttachment.findAll({
