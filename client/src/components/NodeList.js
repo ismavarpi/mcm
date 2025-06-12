@@ -53,6 +53,9 @@ export default function NodeList({ modelId, open, onClose }) {
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
   const [selectedTags, setSelectedTags] = React.useState([]);
+  const [categories, setCategories] = React.useState([]);
+  const [attachments, setAttachments] = React.useState([]);
+  const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
 
   const load = async () => {
     const [nodesRes, tagsRes] = await Promise.all([
@@ -63,7 +66,17 @@ export default function NodeList({ modelId, open, onClose }) {
     setTags(tagsRes.data);
   };
 
-  React.useEffect(() => { if (open) load(); }, [open]);
+  const loadCategories = async () => {
+    const res = await axios.get('/api/document-categories');
+    setCategories(res.data);
+  };
+
+  const loadAttachments = async (id) => {
+    const res = await axios.get(`/api/nodes/${id}/attachments`);
+    setAttachments(res.data);
+  };
+
+  React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
 
   const handleSave = async () => {
     const payload = {
@@ -94,6 +107,7 @@ export default function NodeList({ modelId, open, onClose }) {
     setEditing(node);
     setForm({ name: node.name, parentId: node.parentId || '' });
     setSelectedTags(node.tags ? node.tags.map(t => t.id) : []);
+    loadAttachments(node.id);
     setDialogOpen(true);
   };
 
@@ -101,6 +115,8 @@ export default function NodeList({ modelId, open, onClose }) {
     setEditing(null);
     setForm({ name: '', parentId });
     setSelectedTags([]);
+    setAttachments([]);
+    setAttForm({ categoryId: '', name: '', file: null });
     setDialogOpen(true);
   };
 
@@ -223,6 +239,61 @@ export default function NodeList({ modelId, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            {editing && (
+              <>
+                <div style={{ marginTop: '1rem' }}>
+                  <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>Categoría *</InputLabel>
+                    <Select
+                      label="Categoría *"
+                      value={attForm.categoryId}
+                      onChange={e => setAttForm({ ...attForm, categoryId: e.target.value })}
+                    >
+                      {categories.map(c => (
+                        <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    required
+                    label="Nombre fichero *"
+                    value={attForm.name}
+                    onChange={e => setAttForm({ ...attForm, name: e.target.value })}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                  />
+                  <input
+                    type="file"
+                    onChange={e => setAttForm({ ...attForm, file: e.target.files[0] })}
+                    style={{ marginTop: '1rem' }}
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (!attForm.file) return;
+                      const fd = new FormData();
+                      fd.append('file', attForm.file);
+                      fd.append('name', attForm.name);
+                      fd.append('categoryId', attForm.categoryId);
+                      await axios.post(`/api/nodes/${editing.id}/attachments`, fd);
+                      setAttForm({ categoryId: '', name: '', file: null });
+                      loadAttachments(editing.id);
+                    }}
+                    sx={{ mt: 1 }}
+                  >
+                    Subir
+                  </Button>
+                </div>
+                <div style={{ marginTop: '1rem' }}>
+                  {attachments.map(att => (
+                    <div key={att.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <Chip label={att.DocumentCategory.name} sx={{ mr: 1 }} />
+                      <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
+                      <Button color="error" size="small" sx={{ ml: 1 }} onClick={async () => { if (window.confirm('¿Eliminar archivo?')) { await axios.delete(`/api/attachments/${att.id}`); loadAttachments(editing.id); } }}>Eliminar</Button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>

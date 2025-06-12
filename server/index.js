@@ -2,10 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Sequelize, DataTypes } = require('sequelize');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+const upload = multer({ dest: path.join(__dirname, 'uploads') });
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database connection
 const sequelize = new Sequelize(process.env.DB_NAME || 'mcm', process.env.DB_USER || 'root', process.env.DB_PASS || '', {
@@ -31,6 +36,13 @@ const Model = sequelize.define('Model', {
 
 Model.belongsTo(Model, { as: 'parent', foreignKey: 'parentId' });
 Model.hasMany(Model, { as: 'children', foreignKey: 'parentId' });
+
+const DocumentCategory = sequelize.define('DocumentCategory', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+});
 
 // Tag definition
 const Tag = sequelize.define('Tag', {
@@ -98,6 +110,22 @@ Node.hasMany(Node, { as: 'children', foreignKey: 'parentId' });
 const NodeTag = sequelize.define('NodeTag', {});
 Node.belongsToMany(Tag, { through: NodeTag, as: 'tags', foreignKey: 'nodeId' });
 Tag.belongsToMany(Node, { through: NodeTag, as: 'nodes', foreignKey: 'tagId' });
+
+const NodeAttachment = sequelize.define('NodeAttachment', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  filePath: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+});
+
+DocumentCategory.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'categoryId' });
+NodeAttachment.belongsTo(DocumentCategory, { foreignKey: 'categoryId' });
+Node.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'nodeId' });
+NodeAttachment.belongsTo(Node, { foreignKey: 'nodeId' });
 
 // Parameter definition
 const Parameter = sequelize.define('Parameter', {
@@ -181,6 +209,28 @@ app.post('/api/parameters/:id/reset', async (req, res) => {
 
 app.delete('/api/parameters/:id', async (req, res) => {
   await Parameter.destroy({ where: { id: req.params.id } });
+  res.json({});
+});
+
+// Document category routes
+app.get('/api/document-categories', async (req, res) => {
+  const cats = await DocumentCategory.findAll();
+  res.json(cats);
+});
+
+app.post('/api/document-categories', async (req, res) => {
+  const cat = await DocumentCategory.create(req.body);
+  res.json(cat);
+});
+
+app.put('/api/document-categories/:id', async (req, res) => {
+  await DocumentCategory.update(req.body, { where: { id: req.params.id } });
+  const cat = await DocumentCategory.findByPk(req.params.id);
+  res.json(cat);
+});
+
+app.delete('/api/document-categories/:id', async (req, res) => {
+  await DocumentCategory.destroy({ where: { id: req.params.id } });
   res.json({});
 });
 
@@ -290,10 +340,49 @@ app.post('/api/nodes/:id/tags', async (req, res) => {
   res.json(tags);
 });
 
+// Attachment routes
+app.get('/api/nodes/:nodeId/attachments', async (req, res) => {
+  const attachments = await NodeAttachment.findAll({
+    where: { nodeId: req.params.nodeId },
+    include: { model: DocumentCategory }
+  });
+  res.json(attachments);
+});
+
+app.post('/api/nodes/:nodeId/attachments', upload.single('file'), async (req, res) => {
+  const { categoryId, name } = req.body;
+  if (!req.file) return res.status(400).json({});
+  const filename = Date.now() + '-' + req.file.originalname;
+  const dest = path.join('uploads', filename);
+  fs.renameSync(req.file.path, path.join(__dirname, dest));
+  const attachment = await NodeAttachment.create({
+    nodeId: req.params.nodeId,
+    categoryId,
+    name,
+    filePath: dest
+  });
+  const full = await NodeAttachment.findByPk(attachment.id, { include: DocumentCategory });
+  res.json(full);
+});
+
+app.delete('/api/attachments/:id', async (req, res) => {
+  const att = await NodeAttachment.findByPk(req.params.id);
+  if (att) {
+    try { fs.unlinkSync(path.join(__dirname, att.filePath)); } catch (e) {}
+    await att.destroy();
+  }
+  res.json({});
+});
+
 async function deleteNodeRecursive(id) {
   const children = await Node.findAll({ where: { parentId: id } });
   for (const child of children) {
     await deleteNodeRecursive(child.id);
+  }
+  const atts = await NodeAttachment.findAll({ where: { nodeId: id } });
+  for (const att of atts) {
+    try { fs.unlinkSync(path.join(__dirname, att.filePath)); } catch (e) {}
+    await att.destroy();
   }
   await Node.destroy({ where: { id } });
 }
