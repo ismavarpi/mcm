@@ -22,8 +22,15 @@ const Model = sequelize.define('Model', {
   author: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  parentId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
 });
+
+Model.belongsTo(Model, { as: 'parent', foreignKey: 'parentId' });
+Model.hasMany(Model, { as: 'children', foreignKey: 'parentId' });
 
 // Parameter definition
 const Parameter = sequelize.define('Parameter', {

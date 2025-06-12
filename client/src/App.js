@@ -7,6 +7,7 @@ import Container from '@mui/material/Container';
 
 function App() {
   const [showModels, setShowModels] = React.useState(false);
+  const [showPublicModels, setShowPublicModels] = React.useState(false);
   const [showParams, setShowParams] = React.useState(false);
   const [appName, setAppName] = React.useState('MCM');
 
@@ -22,12 +23,16 @@ function App() {
 
   React.useEffect(() => { loadName(); }, []);
 
-  const closeAll = () => { setShowModels(false); setShowParams(false); };
+  const closeAll = () => { setShowModels(false); setShowParams(false); setShowPublicModels(false); };
 
   return (
     <div>
-      <Header appName={appName} onAdmin={() => { closeAll(); setShowModels(true); }} onParams={() => { closeAll(); setShowParams(true); }} />
+      <Header appName={appName}
+              onModels={() => { closeAll(); setShowPublicModels(true); }}
+              onAdmin={() => { closeAll(); setShowModels(true); }}
+              onParams={() => { closeAll(); setShowParams(true); }} />
       <Container sx={{ mt: 2 }}>
+        {showPublicModels && <ModelList readOnly initialView="cards" />}
         {showModels && <ModelList />}
         {showParams && <ParameterList />}
       </Container>
