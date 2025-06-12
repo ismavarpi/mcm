@@ -32,6 +32,25 @@ const Model = sequelize.define('Model', {
 Model.belongsTo(Model, { as: 'parent', foreignKey: 'parentId' });
 Model.hasMany(Model, { as: 'children', foreignKey: 'parentId' });
 
+// Tag definition
+const Tag = sequelize.define('Tag', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  bgColor: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  textColor: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+});
+
+Model.hasMany(Tag, { as: 'tags', foreignKey: 'modelId' });
+Tag.belongsTo(Model, { foreignKey: 'modelId' });
+
 // Parameter definition
 const Parameter = sequelize.define('Parameter', {
   name: {
@@ -112,6 +131,28 @@ app.post('/api/parameters/:id/reset', async (req, res) => {
 
 app.delete('/api/parameters/:id', async (req, res) => {
   await Parameter.destroy({ where: { id: req.params.id } });
+  res.json({});
+});
+
+// Tag routes
+app.get('/api/models/:modelId/tags', async (req, res) => {
+  const tags = await Tag.findAll({ where: { modelId: req.params.modelId } });
+  res.json(tags);
+});
+
+app.post('/api/models/:modelId/tags', async (req, res) => {
+  const tag = await Tag.create({ ...req.body, modelId: req.params.modelId });
+  res.json(tag);
+});
+
+app.put('/api/tags/:id', async (req, res) => {
+  await Tag.update(req.body, { where: { id: req.params.id } });
+  const tag = await Tag.findByPk(req.params.id);
+  res.json(tag);
+});
+
+app.delete('/api/tags/:id', async (req, res) => {
+  await Tag.destroy({ where: { id: req.params.id } });
   res.json({});
 });
 
