@@ -22,14 +22,14 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { jsPDF } from 'jspdf';
 
 function csvExport(data) {
-  const header = 'Nombre;Autor';
-  const rows = data.map(m => `${m.name};${m.author}`);
+  const header = 'Nombre;Valor;Por defecto';
+  const rows = data.map(p => `${p.name};${p.value};${p.defaultValue}`);
   const csvContent = [header, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', 'modelos.csv');
+  link.setAttribute('download', 'parametros.csv');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -37,69 +37,74 @@ function csvExport(data) {
 
 function pdfExport(data) {
   const doc = new jsPDF();
-  doc.text('Modelos', 10, 10);
+  doc.text('Parámetros', 10, 10);
   let y = 20;
-  data.forEach(m => {
-    doc.text(`${m.name} - ${m.author}`, 10, y);
+  data.forEach(p => {
+    doc.text(`${p.name} - ${p.value} (defecto: ${p.defaultValue})`, 10, y);
     y += 10;
   });
-  doc.save('modelos.pdf');
+  doc.save('parametros.pdf');
 }
 
-export default function ModelList() {
-  const [models, setModels] = React.useState([]);
+export default function ParameterList() {
+  const [params, setParams] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [view, setView] = React.useState('table');
-  const [form, setForm] = React.useState({ name: '', author: '' });
+  const [form, setForm] = React.useState({ name: '', value: '', defaultValue: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
 
   const load = async () => {
-    const res = await axios.get('/api/models');
-    setModels(res.data);
+    const res = await axios.get('/api/parameters');
+    setParams(res.data);
   };
 
   React.useEffect(() => { load(); }, []);
 
   const handleSave = async () => {
     if (editing) {
-      await axios.put(`/api/models/${editing.id}`, form);
+      await axios.put(`/api/parameters/${editing.id}`, form);
     } else {
-      await axios.post('/api/models', form);
+      await axios.post('/api/parameters', form);
     }
     setOpen(false);
-    setForm({ name: '', author: '' });
+    setForm({ name: '', value: '', defaultValue: '' });
     setEditing(null);
     load();
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/models/${id}`);
+      await axios.delete(`/api/parameters/${id}`);
       load();
     }
   };
 
-  const openEdit = (model) => {
-    setEditing(model);
-    setForm({ name: model.name, author: model.author });
+  const handleReset = async (id) => {
+    await axios.post(`/api/parameters/${id}/reset`);
+    load();
+  };
+
+  const openEdit = (param) => {
+    setEditing(param);
+    setForm({ name: param.name, value: param.value, defaultValue: param.defaultValue });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', author: '' });
+    setForm({ name: '', value: '', defaultValue: '' });
     setOpen(true);
   };
 
-  const filtered = models.filter(m =>
-    m.name.toLowerCase().includes(filter.toLowerCase()) ||
-    m.author.toLowerCase().includes(filter.toLowerCase())
+  const filtered = params.filter(p =>
+    p.name.toLowerCase().includes(filter.toLowerCase()) ||
+    p.value.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const sorted = filtered.sort((a,b) => {
+  const sorted = filtered.sort((a,b)=>{
     const valA = a[sort.key];
     const valB = b[sort.key];
     if (valA < valB) return sort.dir === 'asc' ? -1 : 1;
@@ -117,8 +122,8 @@ export default function ModelList() {
         Cambiar vista
       </Button>
       <Button onClick={openCreate}>Nuevo</Button>
-      <Button onClick={() => csvExport(models)}>Exportar CSV</Button>
-      <Button onClick={() => pdfExport(models)}>Exportar PDF</Button>
+      <Button onClick={() => csvExport(params)}>Exportar CSV</Button>
+      <Button onClick={() => pdfExport(params)}>Exportar PDF</Button>
       <IconButton onClick={() => setShowFilters(!showFilters)}>
         <FilterListIcon />
       </IconButton>
@@ -134,18 +139,21 @@ export default function ModelList() {
             <TableHead>
               <TableRow>
                 <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                <TableCell onClick={() => toggleSort('author')} style={{ fontWeight: 'bold' }}>Autor</TableCell>
+                <TableCell onClick={() => toggleSort('value')} style={{ fontWeight: 'bold' }}>Valor</TableCell>
+                <TableCell style={{ fontWeight: 'bold' }}>Por defecto</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {sorted.map((model) => (
-                <TableRow key={model.id}>
-                  <TableCell>{model.name}</TableCell>
-                  <TableCell>{model.author}</TableCell>
+              {sorted.map((param) => (
+                <TableRow key={param.id}>
+                  <TableCell>{param.name}</TableCell>
+                  <TableCell>{param.value}</TableCell>
+                  <TableCell>{param.defaultValue}</TableCell>
                   <TableCell>
-                    <Button onClick={() => openEdit(model)}>Editar</Button>
-                    <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                    <Button onClick={() => openEdit(param)}>Editar</Button>
+                    <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
+                    <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -154,14 +162,16 @@ export default function ModelList() {
         </TableContainer>
       ) : (
         <Grid container spacing={2}>
-          {sorted.map((model) => (
-            <Grid item xs={12} md={4} key={model.id}>
+          {sorted.map((param) => (
+            <Grid item xs={12} md={4} key={param.id}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6">{model.name}</Typography>
-                  <Typography>{model.author}</Typography>
-                  <Button onClick={() => openEdit(model)}>Editar</Button>
-                  <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                  <Typography variant="h6">{param.name}</Typography>
+                  <Typography>{param.value}</Typography>
+                  <Typography variant="caption">Por defecto: {param.defaultValue}</Typography>
+                  <Button onClick={() => openEdit(param)}>Editar</Button>
+                  <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
+                  <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
                 </CardContent>
               </Card>
             </Grid>
@@ -169,10 +179,11 @@ export default function ModelList() {
         </Grid>
       )}
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>{editing ? 'Editar' : 'Nuevo'} modelo</DialogTitle>
+        <DialogTitle>{editing ? 'Editar' : 'Nuevo'} parámetro</DialogTitle>
         <DialogContent>
           <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-          <TextField required label="Autor *" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} fullWidth />
+          <TextField required label="Valor *" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
+          <TextField required label="Valor por defecto *" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>
