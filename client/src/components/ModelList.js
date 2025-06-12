@@ -25,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { jsPDF } from 'jspdf';
 import TagList from './TagList';
+import NodeList from './NodeList';
 
 function csvExport(data) {
   const header = 'Nombre;Autor';
@@ -72,6 +73,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
   const [filter, setFilter] = React.useState('');
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
   const [tagsModel, setTagsModel] = React.useState(null);
+  const [nodesModel, setNodesModel] = React.useState(null);
 
   const load = async () => {
     const res = await axios.get('/api/models');
@@ -113,6 +115,10 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
 
   const openTags = (model) => {
     setTagsModel(model);
+  };
+
+  const openNodes = (model) => {
+    setNodesModel(model);
   };
 
   const filtered = models.filter(m =>
@@ -170,6 +176,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                     <TableCell>
                       <Button onClick={() => openEdit(model)}>Editar</Button>
                       <Button onClick={() => openTags(model)}>Tags</Button>
+                      <Button onClick={() => openNodes(model)}>Nodos</Button>
                       <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
                     </TableCell>
                   )}
@@ -190,6 +197,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                     <>
                       <Button onClick={() => openEdit(model)}>Editar</Button>
                       <Button onClick={() => openTags(model)}>Tags</Button>
+                      <Button onClick={() => openNodes(model)}>Nodos</Button>
                       <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
                     </>
                   )}
@@ -225,6 +233,9 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
       </Dialog>
       {tagsModel && (
         <TagList open={!!tagsModel} modelId={tagsModel.id} onClose={() => setTagsModel(null)} />
+      )}
+      {nodesModel && (
+        <NodeList open={!!nodesModel} modelId={nodesModel.id} onClose={() => setNodesModel(null)} />
       )}
     </div>
   );
