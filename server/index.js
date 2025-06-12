@@ -63,6 +63,14 @@ const Node = sequelize.define('Node', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  modelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  parentId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 });
 
 // Role definition
@@ -81,20 +89,15 @@ Model.hasMany(Team, { as: 'teams', foreignKey: 'modelId' });
 Team.belongsTo(Model, { foreignKey: 'modelId' });
 Team.hasMany(Role, { as: 'roles', foreignKey: 'teamId' });
 Role.belongsTo(Team, { foreignKey: 'teamId' });
-  modelId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  parentId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-});
 
 Model.hasMany(Node, { as: 'nodes', foreignKey: 'modelId' });
 Node.belongsTo(Model, { foreignKey: 'modelId' });
 Node.belongsTo(Node, { as: 'parent', foreignKey: 'parentId' });
 Node.hasMany(Node, { as: 'children', foreignKey: 'parentId' });
+
+const NodeTag = sequelize.define('NodeTag', {});
+Node.belongsToMany(Tag, { through: NodeTag, as: 'tags', foreignKey: 'nodeId' });
+Tag.belongsToMany(Node, { through: NodeTag, as: 'nodes', foreignKey: 'tagId' });
 
 // Parameter definition
 const Parameter = sequelize.define('Parameter', {
@@ -244,21 +247,47 @@ app.put('/api/roles/:id', async (req, res) => {
 
 app.delete('/api/roles/:id', async (req, res) => {
   await Role.destroy({ where: { id: req.params.id } });
+  res.json({});
+});
+
 // Node routes
 app.get('/api/models/:modelId/nodes', async (req, res) => {
-  const nodes = await Node.findAll({ where: { modelId: req.params.modelId } });
+  const nodes = await Node.findAll({
+    where: { modelId: req.params.modelId },
+    include: { model: Tag, as: 'tags' }
+  });
   res.json(nodes);
 });
 
 app.post('/api/models/:modelId/nodes', async (req, res) => {
-  const node = await Node.create({ ...req.body, modelId: req.params.modelId });
-  res.json(node);
+  const { tagIds, ...data } = req.body;
+  const node = await Node.create({ ...data, modelId: req.params.modelId });
+  if (tagIds) await node.setTags(tagIds);
+  const withTags = await Node.findByPk(node.id, { include: { model: Tag, as: 'tags' } });
+  res.json(withTags);
 });
 
 app.put('/api/nodes/:id', async (req, res) => {
-  await Node.update(req.body, { where: { id: req.params.id } });
+  const { tagIds, ...data } = req.body;
+  await Node.update(data, { where: { id: req.params.id } });
   const node = await Node.findByPk(req.params.id);
-  res.json(node);
+  if (tagIds) await node.setTags(tagIds);
+  const withTags = await Node.findByPk(node.id, { include: { model: Tag, as: 'tags' } });
+  res.json(withTags);
+});
+
+app.get('/api/nodes/:id/tags', async (req, res) => {
+  const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
+  if (!node) return res.status(404).json([]);
+  res.json(node.tags);
+});
+
+app.post('/api/nodes/:id/tags', async (req, res) => {
+  const node = await Node.findByPk(req.params.id);
+  if (!node) return res.status(404).json([]);
+  await node.setTags(req.body.tagIds || []);
+  const tags = await node.getTags();
+  res.json(tags);
 });
 
 async function deleteNodeRecursive(id) {

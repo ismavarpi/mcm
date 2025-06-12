@@ -12,6 +12,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import Chip from '@mui/material/Chip';
 import { jsPDF } from 'jspdf';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
@@ -50,22 +51,34 @@ export default function NodeList({ modelId, open, onClose }) {
   const [form, setForm] = React.useState({ name: '', parentId: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
+  const [tags, setTags] = React.useState([]);
+  const [selectedTags, setSelectedTags] = React.useState([]);
 
   const load = async () => {
-    const res = await axios.get(`/api/models/${modelId}/nodes`);
-    setNodes(res.data);
+    const [nodesRes, tagsRes] = await Promise.all([
+      axios.get(`/api/models/${modelId}/nodes`),
+      axios.get(`/api/models/${modelId}/tags`)
+    ]);
+    setNodes(nodesRes.data);
+    setTags(tagsRes.data);
   };
 
   React.useEffect(() => { if (open) load(); }, [open]);
 
   const handleSave = async () => {
+    const payload = {
+      ...form,
+      parentId: form.parentId || null,
+      tagIds: selectedTags,
+    };
     if (editing) {
-      await axios.put(`/api/nodes/${editing.id}`, { ...form, parentId: form.parentId || null });
+      await axios.put(`/api/nodes/${editing.id}`, payload);
     } else {
-      await axios.post(`/api/models/${modelId}/nodes`, { ...form, parentId: form.parentId || null });
+      await axios.post(`/api/models/${modelId}/nodes`, payload);
     }
     setDialogOpen(false);
     setForm({ name: '', parentId: '' });
+    setSelectedTags([]);
     setEditing(null);
     load();
   };
@@ -80,12 +93,14 @@ export default function NodeList({ modelId, open, onClose }) {
   const openEdit = (node) => {
     setEditing(node);
     setForm({ name: node.name, parentId: node.parentId || '' });
+    setSelectedTags(node.tags ? node.tags.map(t => t.id) : []);
     setDialogOpen(true);
   };
 
   const openCreate = (parentId = '') => {
     setEditing(null);
     setForm({ name: '', parentId });
+    setSelectedTags([]);
     setDialogOpen(true);
   };
 
@@ -99,6 +114,20 @@ export default function NodeList({ modelId, open, onClose }) {
           label={
             <div>
               {n.name}
+              {n.tags && n.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  style={{
+                    backgroundColor: tag.bgColor,
+                    color: tag.textColor,
+                    padding: '0 0.25rem',
+                    marginLeft: '0.25rem',
+                    borderRadius: '4px'
+                  }}
+                >
+                  {tag.name}
+                </span>
+              ))}
               <Button size="small" onClick={() => openCreate(n.id)}>Añadir</Button>
               <Button size="small" onClick={() => openEdit(n)}>Editar</Button>
               <Button
@@ -153,6 +182,44 @@ export default function NodeList({ modelId, open, onClose }) {
                 <MenuItem value=""><em>Ninguno</em></MenuItem>
                 {nodes.filter(n => !editing || n.id !== editing.id).map(n => (
                   <MenuItem key={n.id} value={n.id}>{n.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel>Etiquetas</InputLabel>
+              <Select
+                multiple
+                label="Etiquetas"
+                value={selectedTags}
+                onChange={e => setSelectedTags(e.target.value)}
+                renderValue={selected => (
+                  <div>
+                    {selected.map(id => {
+                      const tag = tags.find(t => t.id === id);
+                      return (
+                        <span
+                          key={id}
+                          style={{
+                            backgroundColor: tag.bgColor,
+                            color: tag.textColor,
+                            padding: '0 0.25rem',
+                            marginRight: '0.25rem',
+                            borderRadius: '4px'
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              >
+                {tags.map(tag => (
+                  <MenuItem key={tag.id} value={tag.id}>
+                    <span style={{ backgroundColor: tag.bgColor, color: tag.textColor, padding: '0 0.25rem', borderRadius: '4px' }}>
+                      {tag.name}
+                    </span>
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
