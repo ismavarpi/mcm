@@ -18,6 +18,10 @@ import Typography from "@mui/material/Typography";
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { jsPDF } from 'jspdf';
 
@@ -46,12 +50,23 @@ function pdfExport(data) {
   doc.save('modelos.pdf');
 }
 
-export default function ModelList() {
+function getBreadcrumb(model, models) {
+  const names = [model.name];
+  let current = model;
+  while (current.parentId) {
+    current = models.find(m => m.id === current.parentId);
+    if (!current) break;
+    names.unshift(current.name);
+  }
+  return names.join(' > ');
+}
+
+export default function ModelList({ readOnly = false, initialView = 'table' }) {
   const [models, setModels] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [view, setView] = React.useState('table');
-  const [form, setForm] = React.useState({ name: '', author: '' });
+  const [view, setView] = React.useState(initialView);
+  const [form, setForm] = React.useState({ name: '', author: '', parentId: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
@@ -65,12 +80,12 @@ export default function ModelList() {
 
   const handleSave = async () => {
     if (editing) {
-      await axios.put(`/api/models/${editing.id}`, form);
+      await axios.put(`/api/models/${editing.id}`, { ...form, parentId: form.parentId || null });
     } else {
-      await axios.post('/api/models', form);
+      await axios.post('/api/models', { ...form, parentId: form.parentId || null });
     }
     setOpen(false);
-    setForm({ name: '', author: '' });
+    setForm({ name: '', author: '', parentId: '' });
     setEditing(null);
     load();
   };
@@ -84,13 +99,13 @@ export default function ModelList() {
 
   const openEdit = (model) => {
     setEditing(model);
-    setForm({ name: model.name, author: model.author });
+    setForm({ name: model.name, author: model.author, parentId: model.parentId || '' });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', author: '' });
+    setForm({ name: '', author: '', parentId: '' });
     setOpen(true);
   };
 
@@ -113,10 +128,12 @@ export default function ModelList() {
 
   return (
     <div>
-      <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
-        Cambiar vista
-      </Button>
-      <Button onClick={openCreate}>Nuevo</Button>
+      {!readOnly && (
+        <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
+          Cambiar vista
+        </Button>
+      )}
+      {!readOnly && <Button onClick={openCreate}>Nuevo</Button>}
       <Button onClick={() => csvExport(models)}>Exportar CSV</Button>
       <Button onClick={() => pdfExport(models)}>Exportar PDF</Button>
       <IconButton onClick={() => setShowFilters(!showFilters)}>
@@ -135,7 +152,7 @@ export default function ModelList() {
               <TableRow>
                 <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
                 <TableCell onClick={() => toggleSort('author')} style={{ fontWeight: 'bold' }}>Autor</TableCell>
-                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                {!readOnly && <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -143,10 +160,12 @@ export default function ModelList() {
                 <TableRow key={model.id}>
                   <TableCell>{model.name}</TableCell>
                   <TableCell>{model.author}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => openEdit(model)}>Editar</Button>
-                    <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
-                  </TableCell>
+                  {!readOnly && (
+                    <TableCell>
+                      <Button onClick={() => openEdit(model)}>Editar</Button>
+                      <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -158,10 +177,14 @@ export default function ModelList() {
             <Grid item xs={12} md={4} key={model.id}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6">{model.name}</Typography>
+                  <Typography variant="h6">{getBreadcrumb(model, models)}</Typography>
                   <Typography>{model.author}</Typography>
-                  <Button onClick={() => openEdit(model)}>Editar</Button>
-                  <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                  {!readOnly && (
+                    <>
+                      <Button onClick={() => openEdit(model)}>Editar</Button>
+                      <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </Grid>
@@ -173,6 +196,19 @@ export default function ModelList() {
         <DialogContent>
           <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
           <TextField required label="Autor *" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} fullWidth />
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Modelo padre</InputLabel>
+            <Select
+              label="Modelo padre"
+              value={form.parentId}
+              onChange={(e) => setForm({ ...form, parentId: e.target.value })}
+            >
+              <MenuItem value=""><em>Ninguno</em></MenuItem>
+              {models.filter(m => !editing || m.id !== editing.id).map(m => (
+                <MenuItem key={m.id} value={m.id}>{getBreadcrumb(m, models)}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>
