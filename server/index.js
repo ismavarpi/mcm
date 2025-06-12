@@ -51,12 +51,36 @@ const Tag = sequelize.define('Tag', {
 Model.hasMany(Tag, { as: 'tags', foreignKey: 'modelId' });
 Tag.belongsTo(Model, { foreignKey: 'modelId' });
 
+// Team definition
+const Team = sequelize.define('Team', {
 // Node definition
 const Node = sequelize.define('Node', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
+// Role definition
+const Role = sequelize.define('Role', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
+Model.hasMany(Team, { as: 'teams', foreignKey: 'modelId' });
+Team.belongsTo(Model, { foreignKey: 'modelId' });
+Team.hasMany(Role, { as: 'roles', foreignKey: 'teamId' });
+Role.belongsTo(Team, { foreignKey: 'teamId' });
   modelId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -104,6 +128,8 @@ app.get('/api/models', async (req, res) => {
 
 app.post('/api/models', async (req, res) => {
   const model = await Model.create(req.body);
+  // Create root node automatically
+  await Node.create({ name: 'Raiz', modelId: model.id, parentId: null });
   res.json(model);
 });
 
@@ -177,6 +203,47 @@ app.delete('/api/tags/:id', async (req, res) => {
   res.json({});
 });
 
+// Team routes
+app.get('/api/models/:modelId/teams', async (req, res) => {
+  const teams = await Team.findAll({ where: { modelId: req.params.modelId } });
+  res.json(teams);
+});
+
+app.post('/api/models/:modelId/teams', async (req, res) => {
+  const team = await Team.create({ ...req.body, modelId: req.params.modelId });
+  res.json(team);
+});
+
+app.put('/api/teams/:id', async (req, res) => {
+  await Team.update(req.body, { where: { id: req.params.id } });
+  const team = await Team.findByPk(req.params.id);
+  res.json(team);
+});
+
+app.delete('/api/teams/:id', async (req, res) => {
+  await Team.destroy({ where: { id: req.params.id } });
+  res.json({});
+});
+
+// Role routes
+app.get('/api/teams/:teamId/roles', async (req, res) => {
+  const roles = await Role.findAll({ where: { teamId: req.params.teamId } });
+  res.json(roles);
+});
+
+app.post('/api/teams/:teamId/roles', async (req, res) => {
+  const role = await Role.create({ ...req.body, teamId: req.params.teamId });
+  res.json(role);
+});
+
+app.put('/api/roles/:id', async (req, res) => {
+  await Role.update(req.body, { where: { id: req.params.id } });
+  const role = await Role.findByPk(req.params.id);
+  res.json(role);
+});
+
+app.delete('/api/roles/:id', async (req, res) => {
+  await Role.destroy({ where: { id: req.params.id } });
 // Node routes
 app.get('/api/models/:modelId/nodes', async (req, res) => {
   const nodes = await Node.findAll({ where: { modelId: req.params.modelId } });
