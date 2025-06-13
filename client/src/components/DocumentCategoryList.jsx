@@ -61,7 +61,7 @@ export default function DocumentCategoryList({ open, onClose }) {
     setCats(res.data);
   };
 
-  React.useEffect(() => { if (open) load(); }, [open]);
+  React.useEffect(() => { if (open === undefined || open) load(); }, [open]);
 
   const handleSave = async () => {
     if (editing) {
@@ -110,74 +110,87 @@ export default function DocumentCategoryList({ open, onClose }) {
     setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
   };
 
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Categorías de documento</DialogTitle>
-      <DialogContent>
-        <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
-        <Button onClick={openCreate}>Nueva</Button>
-        <Button onClick={() => csvExport(cats)}>Exportar CSV</Button>
-        <Button onClick={() => pdfExport(cats)}>Exportar PDF</Button>
-        <IconButton onClick={() => setShowFilters(!showFilters)}>
-          <FilterListIcon />
-        </IconButton>
-        {showFilters && (
-          <div style={{ margin: '1rem 0' }}>
-            <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-            <Button onClick={() => setFilter('')}>Reset</Button>
-          </div>
-        )}
-        {view === 'table' ? (
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
-          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-            <TableRow>
-                  <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sorted.map((cat) => (
-                  <TableRow key={cat.id}>
-                    <TableCell>{cat.name}</TableCell>
-                    <TableCell>
-                      <Button onClick={() => openEdit(cat)}>Editar</Button>
-                      <Button color="error" onClick={() => handleDelete(cat.id)}>Eliminar</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Grid container spacing={2} sx={{ mt: 2 }}>
-            {sorted.map((cat) => (
-              <Grid item xs={12} md={4} key={cat.id}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6">{cat.name}</Typography>
+  const content = (
+    <>
+      <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
+      <Button onClick={openCreate}>Nueva</Button>
+      <Button onClick={() => csvExport(cats)}>Exportar CSV</Button>
+      <Button onClick={() => pdfExport(cats)}>Exportar PDF</Button>
+      <IconButton onClick={() => setShowFilters(!showFilters)}>
+        <FilterListIcon />
+      </IconButton>
+      {showFilters && (
+        <div style={{ margin: '1rem 0' }}>
+          <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
+          <Button onClick={() => setFilter('')}>Reset</Button>
+        </div>
+      )}
+      {view === 'table' ? (
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sorted.map((cat) => (
+                <TableRow key={cat.id}>
+                  <TableCell>{cat.name}</TableCell>
+                  <TableCell>
                     <Button onClick={() => openEdit(cat)}>Editar</Button>
                     <Button color="error" onClick={() => handleDelete(cat.id)}>Eliminar</Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría</DialogTitle>
-          <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Guardar</Button>
-          </DialogActions>
-        </Dialog>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          {sorted.map((cat) => (
+            <Grid item xs={12} md={4} key={cat.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">{cat.name}</Typography>
+                  <Button onClick={() => openEdit(cat)}>Editar</Button>
+                  <Button color="error" onClick={() => handleDelete(cat.id)}>Eliminar</Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría</DialogTitle>
+        <DialogContent>
+          <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleSave}>Guardar</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+
+  if (open !== undefined) {
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <DialogTitle>Categorías de documento</DialogTitle>
+        <DialogContent>{content}</DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  return (
+    <div>
+      <Typography variant="h6" sx={{ mb: 2 }}>Categorías de documento</Typography>
+      {content}
+    </div>
   );
 }
