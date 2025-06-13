@@ -207,7 +207,9 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
               <TableRow>
                 <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
                 <TableCell onClick={() => toggleSort('author')} style={{ fontWeight: 'bold' }}>Autor</TableCell>
-                {!readOnly && <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>}
+                {(!readOnly || enableNodeEdit) && (
+                  <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -215,23 +217,27 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                 <TableRow key={model.id}>
                   <TableCell>{model.name}</TableCell>
                   <TableCell>{model.author}</TableCell>
-                  {!readOnly && (
+                  {(!readOnly || enableNodeEdit) && (
                     <TableCell>
-                      <Tooltip title="Editar">
-                        <IconButton onClick={() => openEdit(model)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Tags">
-                        <IconButton onClick={() => openTags(model)}>
-                          <LabelIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Equipos y roles">
-                        <IconButton onClick={() => openTeams(model)}>
-                          <GroupsIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <>
+                          <Tooltip title="Editar">
+                            <IconButton onClick={() => openEdit(model)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Tags">
+                            <IconButton onClick={() => openTags(model)}>
+                              <LabelIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Equipos y roles">
+                            <IconButton onClick={() => openTeams(model)}>
+                              <GroupsIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -239,11 +245,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(model.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Eliminar">
+                          <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>
@@ -259,23 +267,27 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                 <CardContent>
                   <Typography variant="h6">{getBreadcrumb(model, models)}</Typography>
                   <Typography>{model.author}</Typography>
-                  {!readOnly && (
+                  {(!readOnly || enableNodeEdit) && (
                     <>
-                      <Tooltip title="Editar">
-                        <IconButton onClick={() => openEdit(model)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Tags">
-                        <IconButton onClick={() => openTags(model)}>
-                          <LabelIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Equipos y roles">
-                        <IconButton onClick={() => openTeams(model)}>
-                          <GroupsIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <>
+                          <Tooltip title="Editar">
+                            <IconButton onClick={() => openEdit(model)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Tags">
+                            <IconButton onClick={() => openTags(model)}>
+                              <LabelIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Equipos y roles">
+                            <IconButton onClick={() => openTeams(model)}>
+                              <GroupsIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -283,11 +295,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(model.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Eliminar">
+                          <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </>
                   )}
                 </CardContent>
