@@ -60,7 +60,7 @@ export default function NodeList({ modelId, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ name: '', parentId: '', patternType: 'order', patternText: '' });
+  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -150,7 +150,7 @@ export default function NodeList({ modelId, open, onClose }) {
     }
     setFocusNodeId(res.data.id);
     setDialogOpen(false);
-    setForm({ name: '', parentId: '', patternType: 'order', patternText: '' });
+    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '' });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
@@ -167,8 +167,9 @@ export default function NodeList({ modelId, open, onClose }) {
   const openEdit = async (node) => {
     setEditing(node);
     setForm({
-      name: node.name,
       parentId: node.parentId || '',
+      code: node.code,
+      name: node.name,
       patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
       patternText: node.codePattern === 'ORDER' ? '' : node.codePattern
     });
@@ -193,7 +194,7 @@ export default function NodeList({ modelId, open, onClose }) {
 
   const openCreate = (parentId = '') => {
     setEditing(null);
-    setForm({ name: '', parentId, patternType: 'order', patternText: '' });
+    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '' });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -382,8 +383,7 @@ export default function NodeList({ modelId, open, onClose }) {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-            <FormControl fullWidth sx={{ mt: 2 }}>
+            <FormControl fullWidth>
               <InputLabel>Nodo padre</InputLabel>
               <Select
                 label="Nodo padre"
@@ -396,6 +396,21 @@ export default function NodeList({ modelId, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            <TextField
+              label="Código"
+              value={form.code}
+              InputProps={{ readOnly: true }}
+              fullWidth
+              sx={{ mt: 2 }}
+            />
+            <TextField
+              required
+              label="Nombre"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              fullWidth
+              sx={{ mt: 2 }}
+            />
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Patrón de código</InputLabel>
               <Select
