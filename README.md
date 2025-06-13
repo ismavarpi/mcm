@@ -14,11 +14,13 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
    ```
-3. **Preparar la base de datos**
+3. **Conectar a la base de datos**
+   
+   
    ```sql
-   Conectar a la base de datos
     mysql -h localhost -P 3309 -u root -p
    ```
+3. **Preparar la base de datos**
    ```sql
    CREATE DATABASE mcm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    CREATE USER 'mcm'@'localhost' IDENTIFIED BY 'clave_segura';
