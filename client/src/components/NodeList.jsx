@@ -18,6 +18,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
@@ -164,6 +166,11 @@ export default function NodeList({ modelId, open, onClose }) {
     }
   };
 
+  const moveNode = async (id, direction) => {
+    await axios.post(`/api/nodes/${id}/move`, { direction });
+    load();
+  };
+
   const openEdit = async (node) => {
     setEditing(node);
     setForm({
@@ -227,9 +234,10 @@ export default function NodeList({ modelId, open, onClose }) {
   }, [nodes, filter, filterTags]);
 
   const renderTree = (parentId = null) => {
-    return nodes
+    const children = nodes
       .filter(n => n.parentId === parentId && visibleIds.has(n.id))
-      .map(n => (
+      .sort((a, b) => a.order - b.order);
+    return children.map((n, idx) => (
         <TreeItem
           key={n.id}
           itemId={String(n.id)}
@@ -264,6 +272,20 @@ export default function NodeList({ modelId, open, onClose }) {
                   <IconButton size="small" onClick={() => openCreate(n.id)} sx={{ ml: 0.5 }}>
                     <AddIcon fontSize="inherit" />
                   </IconButton>
+                </Tooltip>
+                <Tooltip title="Subir">
+                  <span>
+                    <IconButton size="small" onClick={() => moveNode(n.id, 'up')} disabled={idx === 0} sx={{ ml: 0.5 }}>
+                      <ArrowUpwardIcon fontSize="inherit" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Tooltip title="Bajar">
+                  <span>
+                    <IconButton size="small" onClick={() => moveNode(n.id, 'down')} disabled={idx === children.length - 1} sx={{ ml: 0.5 }}>
+                      <ArrowDownwardIcon fontSize="inherit" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
                 <Tooltip title="Editar">
                   <IconButton size="small" onClick={() => openEdit(n)} sx={{ ml: 0.5 }}>

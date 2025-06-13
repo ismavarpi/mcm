@@ -211,7 +211,7 @@ async function computeNodeCode(node) {
   let part;
   if (node.codePattern === 'ORDER') {
     if (!node.order || node.order === 0) {
-      const max = await Node.max('order', { where: { parentId: node.parentId } });
+      const max = await Node.max('order', { where: { parentId: node.parentId, codePattern: 'ORDER' } });
       node.order = (max || 0) + 1;
     }
     part = String(node.order);
@@ -227,6 +227,20 @@ async function updateNodeAndDescendants(node) {
   const children = await Node.findAll({ where: { parentId: node.id } });
   for (const child of children) {
     await updateNodeAndDescendants(child);
+  }
+}
+
+async function recalculateSiblingOrders(parentId) {
+  const siblings = await Node.findAll({
+    where: { parentId },
+    order: [['order', 'ASC']]
+  });
+  let current = 1;
+  for (const sib of siblings) {
+    if (sib.codePattern === 'ORDER') {
+      sib.order = current++;
+      await updateNodeAndDescendants(sib);
+    }
   }
 }
 
@@ -439,7 +453,8 @@ app.get('/api/models/:modelId/nodes', async (req, res) => {
     include: [
       { model: Tag, as: 'tags' },
       { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
-    ]
+    ],
+    order: [['parentId','ASC'], ['order','ASC']]
   });
   res.json(nodes);
 });
@@ -499,6 +514,34 @@ app.put('/api/nodes/:id', async (req, res) => {
     { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
   ] });
   res.json(withAssociations);
+});
+
+app.post('/api/nodes/:id/move', async (req, res) => {
+  const { direction } = req.body;
+  const node = await Node.findByPk(req.params.id);
+  if (!node) return res.status(404).json({});
+  const siblings = await Node.findAll({
+    where: { parentId: node.parentId },
+    order: [['order', 'ASC']]
+  });
+  const index = siblings.findIndex(s => s.id === node.id);
+  if (direction === 'up' && index > 0) {
+    const target = siblings[index - 1];
+    const tmp = node.order;
+    node.order = target.order;
+    target.order = tmp;
+    await node.save();
+    await target.save();
+  } else if (direction === 'down' && index < siblings.length - 1) {
+    const target = siblings[index + 1];
+    const tmp = node.order;
+    node.order = target.order;
+    target.order = tmp;
+    await node.save();
+    await target.save();
+  }
+  await recalculateSiblingOrders(node.parentId);
+  res.json(node);
 });
 
 app.get('/api/nodes/:id/tags', async (req, res) => {
@@ -563,6 +606,7 @@ app.delete('/api/attachments/:id', async (req, res) => {
 });
 
 async function deleteNodeRecursive(id) {
+  const node = await Node.findByPk(id);
   const children = await Node.findAll({ where: { parentId: id } });
   for (const child of children) {
     await deleteNodeRecursive(child.id);
@@ -573,6 +617,7 @@ async function deleteNodeRecursive(id) {
     await att.destroy();
   }
   await Node.destroy({ where: { id } });
+  if (node) await recalculateSiblingOrders(node.parentId);
 }
 
 app.delete('/api/nodes/:id', async (req, res) => {
