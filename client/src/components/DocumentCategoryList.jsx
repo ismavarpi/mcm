@@ -120,9 +120,7 @@ export default function DocumentCategoryList() {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Categorías de documento</DialogTitle>
-      <DialogContent>
+    <div>
         <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
           <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
             {view === 'table' ? <ViewModuleIcon /> : <TableRowsIcon />}
@@ -222,10 +220,6 @@ export default function DocumentCategoryList() {
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
+    </div>
   );
 }
