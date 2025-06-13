@@ -24,6 +24,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -84,7 +85,7 @@ function pdfExport(data) {
   doc.save('nodos.pdf');
 }
 
-export default function NodeList({ modelId, open, onClose }) {
+export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -343,10 +344,15 @@ export default function NodeList({ modelId, open, onClose }) {
       ));
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Nodos</DialogTitle>
-      <DialogContent>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#fff', overflow: 'auto', zIndex: 1300 }}>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #ccc' }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={onClose}>Volver a modelos</Button>
+        <h2 style={{ marginLeft: '1rem' }}>Nodos del modelo {modelName}</h2>
+      </div>
+      <div style={{ padding: '1rem' }}>
         <Tooltip title="Nuevo nodo raíz">
           <IconButton onClick={() => openCreate('')}>
             <AddIcon />
@@ -653,11 +659,8 @@ export default function NodeList({ modelId, open, onClose }) {
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </div>
   );
 }
 
