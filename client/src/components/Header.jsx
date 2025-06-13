@@ -30,7 +30,7 @@ export default function Header({ appName, onAdmin, onParams, onModels, onCategor
         </IconButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={() => { handleClose(); onAdmin(); }}>Gestión de modelos</MenuItem>
-          <MenuItem onClick={() => { handleClose(); onCategories(); }}>Categorías doc</MenuItem>
+          <MenuItem onClick={() => { handleClose(); onCategories(); }}>Categoría de documento</MenuItem>
           <MenuItem onClick={() => { handleClose(); onParams(); }}>Parámetros</MenuItem>
         </Menu>
       </Toolbar>

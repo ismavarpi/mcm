@@ -46,7 +46,7 @@ function pdfExport(data) {
   doc.save('categorias.pdf');
 }
 
-export default function DocumentCategoryList({ open, onClose }) {
+export default function DocumentCategoryList() {
   const [cats, setCats] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -61,7 +61,7 @@ export default function DocumentCategoryList({ open, onClose }) {
     setCats(res.data);
   };
 
-  React.useEffect(() => { if (open) load(); }, [open]);
+  React.useEffect(() => { load(); }, []);
 
   const handleSave = async () => {
     if (editing) {
@@ -111,9 +111,8 @@ export default function DocumentCategoryList({ open, onClose }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Categorías de documento</DialogTitle>
-      <DialogContent>
+    <div>
+      <Typography variant="h6" sx={{ mb: 2 }}>Categoría de documento</Typography>
         <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
         <Button onClick={openCreate}>Nueva</Button>
         <Button onClick={() => csvExport(cats)}>Exportar CSV</Button>
@@ -174,10 +173,6 @@ export default function DocumentCategoryList({ open, onClose }) {
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+    </div>
   );
 }
