@@ -66,8 +66,8 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cd client
    npm start
    ```
-   React abrirá un servidor de desarrollo en `http://localhost:3000` con recarga automática.
-
+  React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:3000` con recarga automática.
+  
 ## Despliegue definitivo
 
 1. **Construir el cliente**
