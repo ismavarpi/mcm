@@ -11,7 +11,15 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -178,16 +186,26 @@ export default function NodeList({ modelId, open, onClose }) {
                   {tag.name}
                 </span>
               ))}
-              <Button size="small" onClick={() => openCreate(n.id)}>Añadir</Button>
-              <Button size="small" onClick={() => openEdit(n)}>Editar</Button>
-              <Button
-                size="small"
-                color="error"
-                onClick={() => handleDelete(n.id)}
-                disabled={n.name === 'Raiz' && n.parentId === null}
-              >
-                Eliminar
-              </Button>
+              <Tooltip title="Añadir">
+                <IconButton size="small" onClick={() => openCreate(n.id)}>
+                  <AddIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Editar">
+                <IconButton size="small" onClick={() => openEdit(n)}>
+                  <EditIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Eliminar">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(n.id)}
+                  disabled={n.name === 'Raiz' && n.parentId === null}
+                >
+                  <DeleteIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
             </div>
           }
         >
@@ -200,17 +218,35 @@ export default function NodeList({ modelId, open, onClose }) {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Nodos</DialogTitle>
       <DialogContent>
-        <Button onClick={() => openCreate('')}>Nuevo nodo raíz</Button>
-        <Button onClick={() => csvExport(nodes)}>Exportar CSV</Button>
-        <Button onClick={() => pdfExport(nodes)}>Exportar PDF</Button>
-        <IconButton onClick={() => setShowFilters(!showFilters)}>
-          <FilterListIcon />
-        </IconButton>
+        <Tooltip title="Nuevo nodo raíz">
+          <IconButton onClick={() => openCreate('')}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Exportar CSV">
+          <IconButton onClick={() => csvExport(nodes)}>
+            <FileDownloadIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Exportar PDF">
+          <IconButton onClick={() => pdfExport(nodes)}>
+            <PictureAsPdfIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Filtros">
+          <IconButton onClick={() => setShowFilters(!showFilters)}>
+            <FilterListIcon />
+          </IconButton>
+        </Tooltip>
         {showFilters && (
           <div style={{ margin: '1rem 0' }}>
-            <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-            <Button onClick={() => setFilter('')}>Reset</Button>
-          </div>
+          <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
+          <Tooltip title="Reset">
+            <IconButton onClick={() => setFilter('')}>
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
         )}
         <TreeView
           defaultCollapseIcon={<ExpandMoreIcon />}
@@ -383,7 +419,11 @@ export default function NodeList({ modelId, open, onClose }) {
                     <div key={att.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <Chip label={att.DocumentCategory.name} sx={{ mr: 1 }} />
                       <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
-                      <Button color="error" size="small" sx={{ ml: 1 }} onClick={async () => { if (window.confirm('¿Eliminar archivo?')) { await axios.delete(`/api/attachments/${att.id}`); loadAttachments(editing.id); } }}>Eliminar</Button>
+                      <Tooltip title="Eliminar archivo">
+                        <IconButton color="error" size="small" sx={{ ml: 1 }} onClick={async () => { if (window.confirm('¿Eliminar archivo?')) { await axios.delete(`/api/attachments/${att.id}`); loadAttachments(editing.id); } }}>
+                          <DeleteIcon fontSize="inherit" />
+                        </IconButton>
+                      </Tooltip>
                     </div>
                   ))}
                 </div>

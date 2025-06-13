@@ -18,11 +18,23 @@ import Typography from "@mui/material/Typography";
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import TableRowsIcon from '@mui/icons-material/TableRows';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LabelIcon from '@mui/icons-material/Label';
+import GroupsIcon from '@mui/icons-material/Groups';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { jsPDF } from 'jspdf';
 import TagList from './TagList';
 import TeamList from './TeamList';
@@ -146,20 +158,42 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
   return (
     <div>
       {!readOnly && (
-        <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
-          Cambiar vista
-        </Button>
+        <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
+          <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
+            {view === 'table' ? <ViewModuleIcon /> : <TableRowsIcon />}
+          </IconButton>
+        </Tooltip>
       )}
-      {!readOnly && <Button onClick={openCreate}>Nuevo</Button>}
-      <Button onClick={() => csvExport(models)}>Exportar CSV</Button>
-      <Button onClick={() => pdfExport(models)}>Exportar PDF</Button>
-      <IconButton onClick={() => setShowFilters(!showFilters)}>
-        <FilterListIcon />
-      </IconButton>
+      {!readOnly && (
+        <Tooltip title="Nuevo">
+          <IconButton onClick={openCreate}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
+      )}
+      <Tooltip title="Exportar CSV">
+        <IconButton onClick={() => csvExport(models)}>
+          <FileDownloadIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Exportar PDF">
+        <IconButton onClick={() => pdfExport(models)}>
+          <PictureAsPdfIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Filtros">
+        <IconButton onClick={() => setShowFilters(!showFilters)}>
+          <FilterListIcon />
+        </IconButton>
+      </Tooltip>
       {showFilters && (
         <div style={{ margin: '1rem 0' }}>
           <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-          <Button onClick={() => setFilter('')}>Reset</Button>
+          <Tooltip title="Reset">
+            <IconButton onClick={() => setFilter('')}>
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       )}
       {view === 'table' ? (
@@ -179,11 +213,31 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                   <TableCell>{model.author}</TableCell>
                   {!readOnly && (
                     <TableCell>
-                      <Button onClick={() => openEdit(model)}>Editar</Button>
-                      <Button onClick={() => openTags(model)}>Tags</Button>
-                      <Button onClick={() => openTeams(model)}>Equipos</Button>
-                      <Button onClick={() => openNodes(model)}>Nodos</Button>
-                      <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                      <Tooltip title="Editar">
+                        <IconButton onClick={() => openEdit(model)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Tags">
+                        <IconButton onClick={() => openTags(model)}>
+                          <LabelIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Equipos">
+                        <IconButton onClick={() => openTeams(model)}>
+                          <GroupsIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Nodos">
+                        <IconButton onClick={() => openNodes(model)}>
+                          <AccountTreeIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   )}
                 </TableRow>
@@ -201,11 +255,31 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                   <Typography>{model.author}</Typography>
                   {!readOnly && (
                     <>
-                      <Button onClick={() => openEdit(model)}>Editar</Button>
-                      <Button onClick={() => openTags(model)}>Tags</Button>
-                      <Button onClick={() => openTeams(model)}>Equipos</Button>
-                      <Button onClick={() => openNodes(model)}>Nodos</Button>
-                      <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
+                      <Tooltip title="Editar">
+                        <IconButton onClick={() => openEdit(model)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Tags">
+                        <IconButton onClick={() => openTags(model)}>
+                          <LabelIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Equipos">
+                        <IconButton onClick={() => openTeams(model)}>
+                          <GroupsIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Nodos">
+                        <IconButton onClick={() => openNodes(model)}>
+                          <AccountTreeIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </>
                   )}
                 </CardContent>
