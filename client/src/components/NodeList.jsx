@@ -249,8 +249,7 @@ export default function NodeList({ modelId, open, onClose }) {
         </div>
         )}
         <TreeView
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
+          slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
         >
           {renderTree(null)}
         </TreeView>

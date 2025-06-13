@@ -76,7 +76,7 @@ function getBreadcrumb(model, models) {
   return names.join(' > ');
 }
 
-export default function ModelList({ readOnly = false, initialView = 'table' }) {
+export default function ModelList({ readOnly = false, initialView = 'table', enableNodeEdit = false }) {
   const [models, setModels] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -228,11 +228,13 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Nodos">
-                        <IconButton onClick={() => openNodes(model)}>
-                          <AccountTreeIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {enableNodeEdit && (
+                        <Tooltip title="Nodos">
+                          <IconButton onClick={() => openNodes(model)}>
+                            <AccountTreeIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title="Eliminar">
                         <IconButton color="error" onClick={() => handleDelete(model.id)}>
                           <DeleteIcon />
@@ -270,11 +272,13 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Nodos">
-                        <IconButton onClick={() => openNodes(model)}>
-                          <AccountTreeIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {enableNodeEdit && (
+                        <Tooltip title="Nodos">
+                          <IconButton onClick={() => openNodes(model)}>
+                            <AccountTreeIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title="Eliminar">
                         <IconButton color="error" onClick={() => handleDelete(model.id)}>
                           <DeleteIcon />
@@ -318,7 +322,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
       {teamsModel && (
         <TeamList open={!!teamsModel} modelId={teamsModel.id} onClose={() => setTeamsModel(null)} />
       )}
-      {nodesModel && (
+      {enableNodeEdit && nodesModel && (
         <NodeList open={!!nodesModel} modelId={nodesModel.id} onClose={() => setNodesModel(null)} />
       )}
     </div>
