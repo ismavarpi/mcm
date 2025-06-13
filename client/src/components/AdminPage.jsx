@@ -12,7 +12,7 @@ export default function AdminPage() {
     <Box>
       <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Modelos" />
-        <Tab label="Categorías" />
+        <Tab label="Categoría de documentos" />
         <Tab label="Parámetros" />
       </Tabs>
       {tab === 0 && <ModelList enableNodeEdit={false} />}

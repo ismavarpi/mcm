@@ -90,7 +90,7 @@ export default function NodeList({ modelId, open, onClose }) {
   };
 
   const loadCategories = async () => {
-    const res = await axios.get('/api/document-categories');
+    const res = await axios.get('/api/categoria-documentos');
     setCategories(res.data);
   };
 
@@ -373,9 +373,9 @@ export default function NodeList({ modelId, open, onClose }) {
               <>
                 <div style={{ marginTop: '1rem' }}>
                   <FormControl fullWidth required sx={{ mt: 2 }}>
-                    <InputLabel>Categoría</InputLabel>
+                    <InputLabel>Categoría de documentos</InputLabel>
                     <Select
-                      label="Categoría"
+                      label="Categoría de documentos"
                       value={attForm.categoryId}
                       onChange={e => setAttForm({ ...attForm, categoryId: e.target.value })}
                     >
@@ -416,7 +416,7 @@ export default function NodeList({ modelId, open, onClose }) {
                 <div style={{ marginTop: '1rem' }}>
                   {attachments.map(att => (
                     <div key={att.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <Chip label={att.DocumentCategory.name} sx={{ mr: 1 }} />
+                      <Chip label={att.CategoriaDocumento.name} sx={{ mr: 1 }} />
                       <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
                       <Tooltip title="Eliminar archivo">
                         <IconButton color="error" size="small" sx={{ ml: 1 }} onClick={async () => { if (window.confirm('¿Eliminar archivo?')) { await axios.delete(`/api/attachments/${att.id}`); loadAttachments(editing.id); } }}>
