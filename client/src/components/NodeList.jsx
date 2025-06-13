@@ -50,11 +50,37 @@ function csvExport(data) {
 function pdfExport(data) {
   const doc = new jsPDF();
   doc.text('Nodos', 10, 10);
+  const map = {};
+  data.forEach(n => { map[n.id] = { ...n, children: [] }; });
+  data.forEach(n => { if (n.parentId && map[n.parentId]) map[n.parentId].children.push(map[n.id]); });
+
+  const hexToRgb = (hex) => {
+    const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return res ? [parseInt(res[1], 16), parseInt(res[2], 16), parseInt(res[3], 16)] : [0, 0, 0];
+  };
+
   let y = 20;
-  data.forEach(n => {
-    doc.text(`[${n.code}] ${n.name} - padre: ${n.parentId || 'ninguno'}`, 10, y);
-    y += 10;
-  });
+  const drawNode = (node, level) => {
+    const x = 10 + level * 10;
+    doc.setTextColor(0, 0, 0);
+    const base = `[${node.code}] ${node.name}`;
+    doc.text(base, x, y);
+    let tagX = x + doc.getTextWidth(base) + 2;
+    (node.tags || []).forEach(tag => {
+      const [r, g, b] = hexToRgb(tag.bgColor);
+      const [tr, tg, tb] = hexToRgb(tag.textColor);
+      const textWidth = doc.getTextWidth(tag.name) + 4;
+      doc.setFillColor(r, g, b);
+      doc.setTextColor(tr, tg, tb);
+      doc.rect(tagX, y - 4, textWidth, 6, 'F');
+      doc.text(tag.name, tagX + 2, y);
+      tagX += textWidth + 2;
+    });
+    y += 8;
+    node.children.forEach(child => drawNode(child, level + 1));
+  };
+
+  data.filter(n => !n.parentId).forEach(root => drawNode(map[root.id], 0));
   doc.save('nodos.pdf');
 }
 
