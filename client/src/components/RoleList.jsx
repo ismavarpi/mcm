@@ -169,8 +169,8 @@ export default function RoleList({ teamId, open, onClose }) {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} rol</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-            <TextField required label="Orden *" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value, 10) })} fullWidth sx={{ mt: 2 }} />
+            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
+            <TextField required label="Orden" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value, 10) })} fullWidth sx={{ mt: 2 }} />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>

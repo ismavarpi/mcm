@@ -178,9 +178,9 @@ export default function TagList({ modelId, open, onClose }) {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nueva'} etiqueta</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-            <TextField required label="Color fondo *" type="color" value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
-            <TextField required label="Color texto *" type="color" value={form.textColor} onChange={(e) => setForm({ ...form, textColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
+            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
+            <TextField required label="Color fondo" type="color" value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
+            <TextField required label="Color texto" type="color" value={form.textColor} onChange={(e) => setForm({ ...form, textColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
