@@ -38,7 +38,7 @@ function csvExport(data) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', 'categorias.csv');
+  link.setAttribute('download', 'categorias_documentos.csv');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -46,13 +46,13 @@ function csvExport(data) {
 
 function pdfExport(data) {
   const doc = new jsPDF();
-  doc.text('Categorías', 10, 10);
+  doc.text('Categorías de documentos', 10, 10);
   let y = 20;
   data.forEach(c => {
     doc.text(c.name, 10, y);
     y += 10;
   });
-  doc.save('categorias.pdf');
+  doc.save('categorias_documentos.pdf');
 }
 
 export default function DocumentCategoryList() {
@@ -66,7 +66,7 @@ export default function DocumentCategoryList() {
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
 
   const load = async () => {
-    const res = await axios.get('/api/document-categories');
+    const res = await axios.get('/api/categoria-documentos');
     setCats(res.data);
   };
 
@@ -74,9 +74,9 @@ export default function DocumentCategoryList() {
 
   const handleSave = async () => {
     if (editing) {
-      await axios.put(`/api/document-categories/${editing.id}`, form);
+      await axios.put(`/api/categoria-documentos/${editing.id}`, form);
     } else {
-      await axios.post('/api/document-categories', form);
+      await axios.post('/api/categoria-documentos', form);
     }
     setDialogOpen(false);
     setForm({ name: '' });
@@ -86,7 +86,7 @@ export default function DocumentCategoryList() {
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/document-categories/${id}`);
+      await axios.delete(`/api/categoria-documentos/${id}`);
       load();
     }
   };
@@ -211,7 +211,7 @@ export default function DocumentCategoryList() {
           </Grid>
         )}
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría</DialogTitle>
+          <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría de documentos</DialogTitle>
           <DialogContent>
             <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
           </DialogContent>

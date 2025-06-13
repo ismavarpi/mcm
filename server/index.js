@@ -42,12 +42,12 @@ const Model = sequelize.define('Model', {
 Model.belongsTo(Model, { as: 'parent', foreignKey: 'parentId' });
 Model.hasMany(Model, { as: 'children', foreignKey: 'parentId' });
 
-const DocumentCategory = sequelize.define('DocumentCategory', {
+const CategoriaDocumento = sequelize.define('CategoriaDocumento', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   }
-});
+}, { tableName: 'categoria_documentos' });
 
 // Tag definition
 const Tag = sequelize.define('Tag', {
@@ -154,8 +154,8 @@ NodeRasci.belongsTo(Node, { foreignKey: 'nodeId' });
 NodeRasci.belongsTo(Role, { foreignKey: 'roleId' });
 Role.hasMany(NodeRasci, { foreignKey: 'roleId' });
 
-DocumentCategory.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'categoryId' });
-NodeAttachment.belongsTo(DocumentCategory, { foreignKey: 'categoryId' });
+CategoriaDocumento.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'categoryId' });
+NodeAttachment.belongsTo(CategoriaDocumento, { foreignKey: 'categoryId' });
 Node.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'nodeId' });
 NodeAttachment.belongsTo(Node, { foreignKey: 'nodeId' });
 
@@ -258,24 +258,24 @@ app.delete('/api/parameters/:id', async (req, res) => {
 });
 
 // Document category routes
-app.get('/api/document-categories', async (req, res) => {
-  const cats = await DocumentCategory.findAll();
+app.get('/api/categoria-documentos', async (req, res) => {
+  const cats = await CategoriaDocumento.findAll();
   res.json(cats);
 });
 
-app.post('/api/document-categories', async (req, res) => {
-  const cat = await DocumentCategory.create(req.body);
+app.post('/api/categoria-documentos', async (req, res) => {
+  const cat = await CategoriaDocumento.create(req.body);
   res.json(cat);
 });
 
-app.put('/api/document-categories/:id', async (req, res) => {
-  await DocumentCategory.update(req.body, { where: { id: req.params.id } });
-  const cat = await DocumentCategory.findByPk(req.params.id);
+app.put('/api/categoria-documentos/:id', async (req, res) => {
+  await CategoriaDocumento.update(req.body, { where: { id: req.params.id } });
+  const cat = await CategoriaDocumento.findByPk(req.params.id);
   res.json(cat);
 });
 
-app.delete('/api/document-categories/:id', async (req, res) => {
-  await DocumentCategory.destroy({ where: { id: req.params.id } });
+app.delete('/api/categoria-documentos/:id', async (req, res) => {
+  await CategoriaDocumento.destroy({ where: { id: req.params.id } });
   res.json({});
 });
 
@@ -417,7 +417,7 @@ app.get('/api/nodes/:id/rascis', async (req, res) => {
 app.get('/api/nodes/:nodeId/attachments', async (req, res) => {
   const attachments = await NodeAttachment.findAll({
     where: { nodeId: req.params.nodeId },
-    include: { model: DocumentCategory }
+    include: { model: CategoriaDocumento }
   });
   res.json(attachments);
 });
@@ -434,7 +434,7 @@ app.post('/api/nodes/:nodeId/attachments', upload.single('file'), async (req, re
     name,
     filePath: dest
   });
-  const full = await NodeAttachment.findByPk(attachment.id, { include: DocumentCategory });
+  const full = await NodeAttachment.findByPk(attachment.id, { include: CategoriaDocumento });
   res.json(full);
 });
 
