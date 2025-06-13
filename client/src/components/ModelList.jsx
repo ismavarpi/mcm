@@ -361,7 +361,12 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
         <TeamList open={!!teamsModel} modelId={teamsModel.id} onClose={() => setTeamsModel(null)} />
       )}
       {enableNodeEdit && nodesModel && (
-        <NodeList open={!!nodesModel} modelId={nodesModel.id} onClose={() => setNodesModel(null)} />
+        <NodeList
+          open={!!nodesModel}
+          modelId={nodesModel.id}
+          modelName={nodesModel.name}
+          onClose={() => { setNodesModel(null); setView('cards'); }}
+        />
       )}
     </div>
   );
