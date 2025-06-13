@@ -246,13 +246,15 @@ async function updateNodeAndDescendants(node) {
 async function recalculateSiblingOrders(parentId) {
   const siblings = await Node.findAll({
     where: { parentId },
-    order: [['order', 'ASC']]
+    order: [['order', 'ASC'], ['id', 'ASC']]
   });
   let current = 1;
   for (const sib of siblings) {
+    sib.order = current++;
     if (sib.codePattern === 'ORDER') {
-      sib.order = current++;
       await updateNodeAndDescendants(sib);
+    } else {
+      await sib.save();
     }
   }
 }
