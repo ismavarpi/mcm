@@ -1,0 +1,5 @@
+
+Registro esfuerzo:
+
+12/06/2025 > 2,5h > prompts iniciales
+13/06/2025 > 2h > correción de errores del primer despliegue hasta conseguir echarlo a andar
