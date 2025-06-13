@@ -18,7 +18,16 @@ import Typography from "@mui/material/Typography";
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import TableRowsIcon from '@mui/icons-material/TableRows';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { jsPDF } from 'jspdf';
 
 function csvExport(data) {
@@ -114,18 +123,40 @@ export default function RoleList({ teamId, open, onClose }) {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Roles</DialogTitle>
       <DialogContent>
-        <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
-        <Button onClick={openCreate}>Nuevo</Button>
-        <Button onClick={() => csvExport(roles)}>Exportar CSV</Button>
-        <Button onClick={() => pdfExport(roles)}>Exportar PDF</Button>
-        <IconButton onClick={() => setShowFilters(!showFilters)}>
-          <FilterListIcon />
-        </IconButton>
+        <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
+          <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
+            {view === 'table' ? <ViewModuleIcon /> : <TableRowsIcon />}
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Nuevo">
+          <IconButton onClick={openCreate}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Exportar CSV">
+          <IconButton onClick={() => csvExport(roles)}>
+            <FileDownloadIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Exportar PDF">
+          <IconButton onClick={() => pdfExport(roles)}>
+            <PictureAsPdfIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Filtros">
+          <IconButton onClick={() => setShowFilters(!showFilters)}>
+            <FilterListIcon />
+          </IconButton>
+        </Tooltip>
         {showFilters && (
           <div style={{ margin: '1rem 0' }}>
-            <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-            <Button onClick={() => setFilter('')}>Reset</Button>
-          </div>
+          <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
+          <Tooltip title="Reset">
+            <IconButton onClick={() => setFilter('')}>
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
         )}
         {view === 'table' ? (
           <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -143,8 +174,16 @@ export default function RoleList({ teamId, open, onClose }) {
                     <TableCell>{role.order}</TableCell>
                     <TableCell>{role.name}</TableCell>
                     <TableCell>
-                      <Button onClick={() => openEdit(role)}>Editar</Button>
-                      <Button color="error" onClick={() => handleDelete(role.id)}>Eliminar</Button>
+                      <Tooltip title="Editar">
+                        <IconButton onClick={() => openEdit(role)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton color="error" onClick={() => handleDelete(role.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -158,8 +197,16 @@ export default function RoleList({ teamId, open, onClose }) {
                 <Card>
                   <CardContent>
                     <Typography variant="h6">{role.order} - {role.name}</Typography>
-                    <Button onClick={() => openEdit(role)}>Editar</Button>
-                    <Button color="error" onClick={() => handleDelete(role.id)}>Eliminar</Button>
+                    <Tooltip title="Editar">
+                      <IconButton onClick={() => openEdit(role)}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton color="error" onClick={() => handleDelete(role.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </CardContent>
                 </Card>
               </Grid>

@@ -18,7 +18,17 @@ import Typography from "@mui/material/Typography";
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import TableRowsIcon from '@mui/icons-material/TableRows';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import RestoreIcon from '@mui/icons-material/Restore';
 import { jsPDF } from 'jspdf';
 
 function csvExport(data) {
@@ -118,19 +128,39 @@ export default function ParameterList() {
 
   return (
     <div>
-      <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
-        Cambiar vista
-      </Button>
-      <Button onClick={openCreate}>Nuevo</Button>
-      <Button onClick={() => csvExport(params)}>Exportar CSV</Button>
-      <Button onClick={() => pdfExport(params)}>Exportar PDF</Button>
-      <IconButton onClick={() => setShowFilters(!showFilters)}>
-        <FilterListIcon />
-      </IconButton>
+      <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
+        <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
+          {view === 'table' ? <ViewModuleIcon /> : <TableRowsIcon />}
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Nuevo">
+        <IconButton onClick={openCreate}>
+          <AddIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Exportar CSV">
+        <IconButton onClick={() => csvExport(params)}>
+          <FileDownloadIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Exportar PDF">
+        <IconButton onClick={() => pdfExport(params)}>
+          <PictureAsPdfIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Filtros">
+        <IconButton onClick={() => setShowFilters(!showFilters)}>
+          <FilterListIcon />
+        </IconButton>
+      </Tooltip>
       {showFilters && (
         <div style={{ margin: '1rem 0' }}>
           <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-          <Button onClick={() => setFilter('')}>Reset</Button>
+          <Tooltip title="Reset">
+            <IconButton onClick={() => setFilter('')}>
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       )}
       {view === 'table' ? (
@@ -151,9 +181,21 @@ export default function ParameterList() {
                   <TableCell>{param.value}</TableCell>
                   <TableCell>{param.defaultValue}</TableCell>
                   <TableCell>
-                    <Button onClick={() => openEdit(param)}>Editar</Button>
-                    <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
-                    <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
+                    <Tooltip title="Editar">
+                      <IconButton onClick={() => openEdit(param)}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Reset">
+                      <IconButton color="secondary" onClick={() => handleReset(param.id)}>
+                        <RestoreIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton color="error" onClick={() => handleDelete(param.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
@@ -169,9 +211,21 @@ export default function ParameterList() {
                   <Typography variant="h6">{param.name}</Typography>
                   <Typography>{param.value}</Typography>
                   <Typography variant="caption">Por defecto: {param.defaultValue}</Typography>
-                  <Button onClick={() => openEdit(param)}>Editar</Button>
-                  <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
-                  <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
+                  <Tooltip title="Editar">
+                    <IconButton onClick={() => openEdit(param)}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reset">
+                    <IconButton color="secondary" onClick={() => handleReset(param.id)}>
+                      <RestoreIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Eliminar">
+                    <IconButton color="error" onClick={() => handleDelete(param.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </CardContent>
               </Card>
             </Grid>
