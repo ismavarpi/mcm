@@ -1,163 +1,90 @@
-# MCM
+# Despliegue de la aplicación MCM
 
-This repository contains a simple React/Node application.
+Esta guía describe paso a paso cómo poner en marcha la aplicación en un servidor Linux desde cero. Los ejemplos asumen una distribución basada en Debian/Ubuntu y que el usuario dispone de permisos de administrador.
 
-## Setup
+## 1. Instalar dependencias básicas
 
-1. Install dependencies for server and client:
-   ```bash
-   cd server && npm install
-   cd ../client && npm install
-   ```
-
-2. Start the backend server:
-   ```bash
-   cd server
-   npm start
-   ```
-
-   Configure database connection with environment variables `DB_NAME`, `DB_USER`, `DB_PASS`, and `DB_HOST`. The server uses MariaDB and will auto-create the table `Models` on startup.
-
-3. Start the frontend React app:
-   ```bash
-   cd ../client
-   npm start
-   ```
-
-The application shows a homepage with a header and menus. Use the administration menu (gear icon) to manage models (name and author). CRUD operations are provided via popups. Data is retrieved via REST API.
-
-
-## Automated deployment
-
-The folder `ansible` contains a sample playbook that installs Node.js,
-clones this repository and starts the services using `pm2`.
-To run the playbook configure the inventory and execute:
+Instala Node.js (versión 20 o superior), npm y MariaDB. Puedes hacerlo con:
 
 ```bash
-ansible-playbook -i ansible/inventory ansible/deploy.yml
+sudo apt update
+sudo apt install nodejs npm mariadb-server
 ```
 
-## Despliegue en un servidor
+## 2. Obtener el código de la aplicación
 
-A continuación se muestra un ejemplo de despliegue en un servidor Linux. Se asume que el servidor cuenta con Node.js, npm y MariaDB instalados.
+Escoge un directorio de trabajo y clona el repositorio:
 
-1. **Clonar el repositorio** en el servidor:
-   ```bash
-   git clone <URL_DEL_REPOSITORIO> mcm
-   cd mcm
-   ```
+```bash
+git clone <URL_DEL_REPOSITORIO> mcm
+cd mcm
+```
 
-2. **Crear la base de datos** y un usuario con permisos. Desde la consola de MariaDB:
-   ```sql
-   CREATE DATABASE mcm;
-   CREATE USER 'mcm'@'localhost' IDENTIFIED BY 'tu_clave';
-   GRANT ALL PRIVILEGES ON mcm.* TO 'mcm'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
+## 3. Preparar la base de datos
 
-3. **Instalar dependencias y compilar el cliente**:
-   ```bash
-   cd server && npm install
-   cd ../client && npm install
-   npm run build
-   ```
-   El comando `npm run build` creará una carpeta `build` con los archivos estáticos de React.
+Accede a la consola de MariaDB y crea una base de datos junto con un usuario para la aplicación:
 
-4. **Configurar las variables de entorno** necesarias para la API:
-   ```bash
-   export DB_NAME=mcm
-   export DB_USER=mcm
-   export DB_PASS=tu_clave
-   export DB_HOST=localhost
-   ```
-   Estas variables pueden colocarse en un fichero `.env` o en el sistema de gestión de servicios que se utilice.
+```sql
+CREATE DATABASE mcm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mcm'@'localhost' IDENTIFIED BY 'clave_segura';
+GRANT ALL PRIVILEGES ON mcm.* TO 'mcm'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-5. **Iniciar el servidor Node** (puerto 3001 por defecto):
-   ```bash
-   cd ../server
-   npm start
-   ```
-   Para mantenerlo en segundo plano se puede emplear `pm2` u otra herramienta similar.
+## 4. Configurar la API
 
-6. **Servir la aplicación React**. La carpeta `client/build` contiene los archivos estáticos generados. Se pueden servir de varias formas:
-   - Ejecutar `npx serve -s build` desde `client` para lanzar un servidor estático sencillo.
-   - O bien configurar un servidor web (Nginx o Apache) para que utilice la carpeta `build` como directorio raíz del sitio.
+En la carpeta `server` instala las dependencias y crea un archivo `.env` con los datos de conexión:
 
-Con estos pasos la API quedará accesible en el puerto 3001 y el frontend en el puerto 3000 (si se usa `serve`) o en el configurado en el servidor web.
+```bash
+cd server
+npm install
+cat <<'ENV' > .env
+DB_NAME=mcm
+DB_USER=mcm
+DB_PASS=clave_segura
+DB_HOST=localhost
+ENV
+```
 
-## Despliegue con contenedores
+Inicia la API ejecutando:
 
-También es posible ejecutar la aplicación mediante contenedores Docker. A continuación se ofrece un ejemplo básico usando `docker compose`.
+```bash
+npm start
+```
 
-1. **Crear los siguientes archivos** en la raíz del proyecto:
+La primera vez se generará la tabla necesaria en la base de datos.
 
-   `server/Dockerfile`
-   ```Dockerfile
-   FROM node:20
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm install
-   COPY . .
-   EXPOSE 3001
-   CMD ["npm", "start"]
-   ```
+## 5. Construir el cliente
 
-   `client/Dockerfile`
-   ```Dockerfile
-   FROM node:20 AS build
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm install
-   COPY . .
-   RUN npm run build
+En otra terminal prepara la parte de React. Instala dependencias y compila:
 
-   FROM nginx:alpine
-   COPY --from=build /app/build /usr/share/nginx/html
-   EXPOSE 80
-   ```
+```bash
+cd client
+npm install
+npm run build
+```
 
-   `docker-compose.yml`
-   ```yaml
-   version: '3.8'
-   services:
-     db:
-       image: mariadb:latest
-       environment:
-         MARIADB_ROOT_PASSWORD: example
-         MARIADB_DATABASE: mcm
-       ports:
-         - "3306:3306"
+La carpeta `build` resultante contiene los archivos estáticos que se servirán al usuario.
 
-     server:
-       build: ./server
-       environment:
-         DB_NAME: mcm
-         DB_USER: root
-         DB_PASS: example
-         DB_HOST: db
-       depends_on:
-         - db
-       ports:
-         - "3001:3001"
+## 6. Servir el frontend
 
-     client:
-       build: ./client
-       depends_on:
-         - server
-       ports:
-         - "3000:80"
-   ```
+Existen varias formas de publicar la carpeta `client/build`. La más sencilla es emplear el paquete `serve`:
 
-2. **Construir y lanzar los contenedores**:
-   ```bash
-   docker compose up --build
-   ```
+```bash
+npx serve -s build
+```
 
-   Esto descargará las imágenes necesarias, compilará el código y levantará tres contenedores: la base de datos MariaDB, el servidor de la API y el servidor web con la aplicación React.
+Con esto la aplicación quedará accesible en `http://<IP_DEL_SERVIDOR>:3000`. Si lo prefieres, puedes mover el contenido de `build` a un directorio gestionado por Nginx o Apache.
 
-3. **Acceder a la aplicación** en un navegador:
-   - Frontend: `http://localhost:3000`
-   - API REST: `http://localhost:3001`
+## 7. Mantener los procesos en segundo plano (opcional)
 
-Con Docker es sencillo detener todo el entorno con `docker compose down` o reiniciarlo de nuevo cuando se necesite.
+Para que la API y el servidor de archivos estáticos sigan activos tras cerrar sesión se recomienda utilizar `pm2` u otra herramienta similar:
 
+```bash
+sudo npm install -g pm2
+pm2 start npm --name mcm-api -- start --prefix server
+pm2 start npx --name mcm-web -- serve -s build --prefix client
+pm2 save
+```
+
+Con estos pasos la aplicación queda desplegada y funcionando.
