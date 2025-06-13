@@ -229,6 +229,7 @@ export default function NodeList({ modelId, open, onClose }) {
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '0.5rem' }}>{n.name}</span>
+
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {n.tags && n.tags.map(tag => (
                   <span
@@ -273,6 +274,7 @@ export default function NodeList({ modelId, open, onClose }) {
                   </IconButton>
                 </Tooltip>
               </div>
+
             </div>
           }
         >
