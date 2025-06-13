@@ -40,7 +40,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cat <<'ENV' > .env
    DB_NAME=mcm
    DB_USER=mcm
-   DB_PASS=clave_segura
+   DB_PASSWORD=clave_segura
    DB_HOST=localhost
    ENV
    cd ..
