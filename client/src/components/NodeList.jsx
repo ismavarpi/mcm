@@ -20,6 +20,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -69,6 +71,11 @@ export default function NodeList({ modelId, open, onClose }) {
   const [categories, setCategories] = React.useState([]);
   const [attachments, setAttachments] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
+  const [expanded, setExpanded] = React.useState([]);
+  const [selected, setSelected] = React.useState('');
+  const [focusNodeId, setFocusNodeId] = React.useState(null);
+  const [allExpanded, setAllExpanded] = React.useState(false);
+  const [inheritedTags, setInheritedTags] = React.useState([]);
 
   const load = async () => {
     const [nodesRes, tagsRes, teamsRes] = await Promise.all([
@@ -88,6 +95,25 @@ export default function NodeList({ modelId, open, onClose }) {
     setNodes(nodesRes.data);
     setTags(tagsRes.data);
   };
+
+  React.useEffect(() => {
+    setAllExpanded(nodes.length > 0 && expanded.length === nodes.length);
+  }, [expanded, nodes]);
+
+  React.useEffect(() => {
+    if (focusNodeId && nodes.length) {
+      const map = Object.fromEntries(nodes.map(n => [n.id, n]));
+      let current = map[focusNodeId];
+      const path = [];
+      while (current) {
+        path.unshift(String(current.id));
+        current = current.parentId ? map[current.parentId] : null;
+      }
+      setExpanded(prev => Array.from(new Set([...prev, ...path])));
+      setSelected(String(focusNodeId));
+      setFocusNodeId(null);
+    }
+  }, [focusNodeId, nodes]);
 
   const loadCategories = async () => {
     const res = await axios.get(`/api/models/${modelId}/categoria-documentos`);
@@ -114,11 +140,13 @@ export default function NodeList({ modelId, open, onClose }) {
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
+    let res;
     if (editing) {
-      await axios.put(`/api/nodes/${editing.id}`, payload);
+      res = await axios.put(`/api/nodes/${editing.id}`, payload);
     } else {
-      await axios.post(`/api/models/${modelId}/nodes`, payload);
+      res = await axios.post(`/api/models/${modelId}/nodes`, payload);
     }
+    setFocusNodeId(res.data.id);
     setDialogOpen(false);
     setForm({ name: '', parentId: '' });
     setSelectedTags([]);
@@ -137,7 +165,11 @@ export default function NodeList({ modelId, open, onClose }) {
   const openEdit = async (node) => {
     setEditing(node);
     setForm({ name: node.name, parentId: node.parentId || '' });
-    setSelectedTags(node.tags ? node.tags.map(t => t.id) : []);
+    const parent = nodes.find(n => n.id === node.parentId);
+    const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
+    setInheritedTags(inherited);
+    const nodeTagIds = node.tags ? node.tags.map(t => t.id) : [];
+    setSelectedTags(Array.from(new Set([...nodeTagIds, ...inherited])));
     const rasciRes = await axios.get(`/api/nodes/${node.id}/rascis`);
     const sorted = rasciRes.data.sort((a,b)=>{
       const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
@@ -155,7 +187,10 @@ export default function NodeList({ modelId, open, onClose }) {
   const openCreate = (parentId = '') => {
     setEditing(null);
     setForm({ name: '', parentId });
-    setSelectedTags([]);
+    const parent = nodes.find(n => n.id === parentId);
+    const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
+    setInheritedTags(inherited);
+    setSelectedTags(inherited);
     setRasciLines([]);
     setAttachments([]);
     setAttForm({ categoryId: '', name: '', file: null });
@@ -233,6 +268,19 @@ export default function NodeList({ modelId, open, onClose }) {
             <PictureAsPdfIcon />
           </IconButton>
         </Tooltip>
+        <Tooltip title={allExpanded ? 'Replegar todo' : 'Desplegar todo'}>
+          <IconButton onClick={() => {
+            if (allExpanded) {
+              setExpanded([]);
+              setAllExpanded(false);
+            } else {
+              setExpanded(nodes.map(n => String(n.id)));
+              setAllExpanded(true);
+            }
+          }}>
+            {allExpanded ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Filtros">
           <IconButton onClick={() => setShowFilters(!showFilters)}>
             <FilterListIcon />
@@ -250,6 +298,13 @@ export default function NodeList({ modelId, open, onClose }) {
         )}
         <TreeView
           slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
+          expandedItems={expanded}
+          onExpandedItemsChange={(e, ids) => {
+            setExpanded(ids);
+            setAllExpanded(ids.length === nodes.length);
+          }}
+          selectedItems={selected}
+          onSelectedItemsChange={(e, ids) => setSelected(ids)}
         >
           {renderTree(null)}
         </TreeView>
@@ -276,7 +331,11 @@ export default function NodeList({ modelId, open, onClose }) {
                 multiple
                 label="Etiquetas"
                 value={selectedTags}
-                onChange={e => setSelectedTags(e.target.value)}
+                onChange={e => {
+                  const val = e.target.value;
+                  const combined = Array.from(new Set([...val, ...inheritedTags]));
+                  setSelectedTags(combined);
+                }}
                 renderValue={selected => (
                   <div>
                     {selected.map(id => {
@@ -300,7 +359,7 @@ export default function NodeList({ modelId, open, onClose }) {
                 )}
               >
                 {tags.map(tag => (
-                  <MenuItem key={tag.id} value={tag.id}>
+                  <MenuItem key={tag.id} value={tag.id} disabled={inheritedTags.includes(tag.id)}>
                     <span style={{ backgroundColor: tag.bgColor, color: tag.textColor, padding: '0 0.25rem', borderRadius: '4px' }}>
                       {tag.name}
                     </span>

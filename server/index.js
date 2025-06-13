@@ -165,6 +165,28 @@ NodeAttachment.belongsTo(CategoriaDocumento, { foreignKey: 'categoryId' });
 Node.hasMany(NodeAttachment, { as: 'attachments', foreignKey: 'nodeId' });
 NodeAttachment.belongsTo(Node, { foreignKey: 'nodeId' });
 
+async function addTagsToDescendants(parentId, tagIds) {
+  const children = await Node.findAll({ where: { parentId } });
+  for (const child of children) {
+    const currentTags = await child.getTags();
+    const currentIds = currentTags.map(t => t.id);
+    const newIds = Array.from(new Set([...currentIds, ...tagIds]));
+    await child.setTags(newIds);
+    await addTagsToDescendants(child.id, tagIds);
+  }
+}
+
+async function removeTagsFromDescendants(parentId, tagIds) {
+  const children = await Node.findAll({ where: { parentId } });
+  for (const child of children) {
+    const currentTags = await child.getTags();
+    const currentIds = currentTags.map(t => t.id);
+    const newIds = currentIds.filter(id => !tagIds.includes(id));
+    await child.setTags(newIds);
+    await removeTagsFromDescendants(child.id, tagIds);
+  }
+}
+
 // Parameter definition
 const Parameter = sequelize.define('Parameter', {
   name: {
@@ -364,9 +386,13 @@ app.get('/api/models/:modelId/nodes', async (req, res) => {
 });
 
 app.post('/api/models/:modelId/nodes', async (req, res) => {
-  const { tagIds, rasci, ...data } = req.body;
+  const { tagIds = [], rasci, ...data } = req.body;
+  const parentTags = data.parentId
+    ? (await Node.findByPk(data.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)
+    : [];
+  const finalTags = Array.from(new Set([...tagIds, ...parentTags]));
   const node = await Node.create({ ...data, modelId: req.params.modelId });
-  if (tagIds) await node.setTags(tagIds);
+  if (finalTags.length) await node.setTags(finalTags);
   if (rasci && rasci.length) {
     for (const line of rasci) {
       await NodeRasci.create({ nodeId: node.id, roleId: line.roleId, responsibilities: line.responsibilities.join('') });
@@ -380,10 +406,19 @@ app.post('/api/models/:modelId/nodes', async (req, res) => {
 });
 
 app.put('/api/nodes/:id', async (req, res) => {
-  const { tagIds, rasci, ...data } = req.body;
-  await Node.update(data, { where: { id: req.params.id } });
-  const node = await Node.findByPk(req.params.id);
-  if (tagIds) await node.setTags(tagIds);
+  const { tagIds = [], rasci, ...data } = req.body;
+  const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
+  await node.update(data);
+  const oldTagIds = node.tags.map(t => t.id);
+  const parentTags = node.parentId
+    ? (await Node.findByPk(node.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)
+    : [];
+  const finalTags = Array.from(new Set([...tagIds, ...parentTags]));
+  await node.setTags(finalTags);
+  const added = finalTags.filter(id => !oldTagIds.includes(id));
+  const removed = oldTagIds.filter(id => !finalTags.includes(id));
+  if (added.length) await addTagsToDescendants(node.id, added);
+  if (removed.length) await removeTagsFromDescendants(node.id, removed);
   if (rasci) {
     await NodeRasci.destroy({ where: { nodeId: node.id } });
     for (const line of rasci) {
