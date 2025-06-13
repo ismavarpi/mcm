@@ -31,7 +31,11 @@ function App() {
               onAdmin={() => { closeAll(); setShowAdmin(true); }} />
       <Container sx={{ mt: 2 }}>
         {showPublicModels && <ModelList readOnly initialView="cards" />}
+        {showModels && <ModelList />}
+        {showCats && <DocumentCategoryList />}
+        {showParams && <ParameterList />}
         {showAdmin && <AdminPage />}
+
       </Container>
     </div>
   );
