@@ -130,8 +130,8 @@ export default function DocumentCategoryList({ open, onClose }) {
         {view === 'table' ? (
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table>
-              <TableHead>
-                <TableRow>
+          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+            <TableRow>
                   <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
                   <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                 </TableRow>

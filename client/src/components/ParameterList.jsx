@@ -135,8 +135,8 @@ export default function ParameterList() {
       )}
       {view === 'table' ? (
         <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
+        <Table>
+          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
               <TableRow>
                 <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
                 <TableCell onClick={() => toggleSort('value')} style={{ fontWeight: 'bold' }}>Valor</TableCell>

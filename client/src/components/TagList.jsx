@@ -20,17 +20,16 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { jsPDF } from 'jspdf';
-import RoleList from './RoleList';
 
 function csvExport(data) {
-  const header = 'Nombre;Orden';
-  const rows = data.map(t => `${t.name};${t.order}`);
+  const header = 'Nombre;Color fondo;Color texto';
+  const rows = data.map(t => `${t.name};${t.bgColor};${t.textColor}`);
   const csvContent = [header, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', 'equipos.csv');
+  link.setAttribute('download', 'tags.csv');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -38,69 +37,64 @@ function csvExport(data) {
 
 function pdfExport(data) {
   const doc = new jsPDF();
-  doc.text('Equipos', 10, 10);
+  doc.text('Etiquetas', 10, 10);
   let y = 20;
   data.forEach(t => {
-    doc.text(`${t.order} - ${t.name}`, 10, y);
+    doc.text(`${t.name} - ${t.bgColor} - ${t.textColor}`, 10, y);
     y += 10;
   });
-  doc.save('equipos.pdf');
+  doc.save('tags.pdf');
 }
 
-export default function TeamList({ modelId, open, onClose }) {
-  const [teams, setTeams] = React.useState([]);
+export default function TagList({ modelId, open, onClose }) {
+  const [tags, setTags] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [view, setView] = React.useState('table');
-  const [form, setForm] = React.useState({ name: '', order: 0 });
+  const [form, setForm] = React.useState({ name: '', bgColor: '#ffffff', textColor: '#000000' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
-  const [sort, setSort] = React.useState({ key: 'order', dir: 'asc' });
-  const [rolesTeam, setRolesTeam] = React.useState(null);
+  const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
 
   const load = async () => {
-    const res = await axios.get(`/api/models/${modelId}/teams`);
-    setTeams(res.data);
+    const res = await axios.get(`/api/models/${modelId}/tags`);
+    setTags(res.data);
   };
 
   React.useEffect(() => { if (open) load(); }, [open]);
 
   const handleSave = async () => {
     if (editing) {
-      await axios.put(`/api/teams/${editing.id}`, form);
+      await axios.put(`/api/tags/${editing.id}`, form);
     } else {
-      await axios.post(`/api/models/${modelId}/teams`, form);
+      await axios.post(`/api/models/${modelId}/tags`, form);
     }
     setDialogOpen(false);
-    setForm({ name: '', order: 0 });
+    setForm({ name: '', bgColor: '#ffffff', textColor: '#000000' });
     setEditing(null);
     load();
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/teams/${id}`);
+      await axios.delete(`/api/tags/${id}`);
       load();
     }
   };
 
-  const openEdit = (team) => {
-    setEditing(team);
-    setForm({ name: team.name, order: team.order });
+  const openEdit = (tag) => {
+    setEditing(tag);
+    setForm({ name: tag.name, bgColor: tag.bgColor, textColor: tag.textColor });
     setDialogOpen(true);
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', order: 0 });
+    setForm({ name: '', bgColor: '#ffffff', textColor: '#000000' });
     setDialogOpen(true);
   };
 
-  const openRoles = (team) => {
-    setRolesTeam(team);
-  };
-
-  const filtered = teams.filter(t =>
+  const filtered = tags.filter(t =>
     t.name.toLowerCase().includes(filter.toLowerCase())
   );
 
@@ -118,12 +112,12 @@ export default function TeamList({ modelId, open, onClose }) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Equipos</DialogTitle>
+      <DialogTitle>Etiquetas</DialogTitle>
       <DialogContent>
         <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
-        <Button onClick={openCreate}>Nuevo</Button>
-        <Button onClick={() => csvExport(teams)}>Exportar CSV</Button>
-        <Button onClick={() => pdfExport(teams)}>Exportar PDF</Button>
+        <Button onClick={openCreate}>Nueva</Button>
+        <Button onClick={() => csvExport(tags)}>Exportar CSV</Button>
+        <Button onClick={() => pdfExport(tags)}>Exportar PDF</Button>
         <IconButton onClick={() => setShowFilters(!showFilters)}>
           <FilterListIcon />
         </IconButton>
@@ -136,22 +130,27 @@ export default function TeamList({ modelId, open, onClose }) {
         {view === 'table' ? (
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table>
-              <TableHead>
+          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableRow>
-                  <TableCell onClick={() => toggleSort('order')} style={{ fontWeight: 'bold' }}>Orden</TableCell>
                   <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                  <TableCell onClick={() => toggleSort('bgColor')} style={{ fontWeight: 'bold' }}>Color fondo</TableCell>
+                  <TableCell onClick={() => toggleSort('textColor')} style={{ fontWeight: 'bold' }}>Color texto</TableCell>
                   <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sorted.map((team) => (
-                  <TableRow key={team.id}>
-                    <TableCell>{team.order}</TableCell>
-                    <TableCell>{team.name}</TableCell>
+                {sorted.map((tag) => (
+                  <TableRow key={tag.id}>
+                    <TableCell>{tag.name}</TableCell>
                     <TableCell>
-                      <Button onClick={() => openEdit(team)}>Editar</Button>
-                      <Button onClick={() => openRoles(team)}>Roles</Button>
-                      <Button color="error" onClick={() => handleDelete(team.id)}>Eliminar</Button>
+                      <span style={{ backgroundColor: tag.bgColor, padding: '0.2rem 0.5rem', color: tag.textColor }}>
+                        {tag.bgColor}
+                      </span>
+                    </TableCell>
+                    <TableCell>{tag.textColor}</TableCell>
+                    <TableCell>
+                      <Button onClick={() => openEdit(tag)}>Editar</Button>
+                      <Button color="error" onClick={() => handleDelete(tag.id)}>Eliminar</Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -160,14 +159,16 @@ export default function TeamList({ modelId, open, onClose }) {
           </TableContainer>
         ) : (
           <Grid container spacing={2} sx={{ mt: 2 }}>
-            {sorted.map((team) => (
-              <Grid item xs={12} md={4} key={team.id}>
+            {sorted.map((tag) => (
+              <Grid item xs={12} md={4} key={tag.id}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6">{team.order} - {team.name}</Typography>
-                    <Button onClick={() => openEdit(team)}>Editar</Button>
-                    <Button onClick={() => openRoles(team)}>Roles</Button>
-                    <Button color="error" onClick={() => handleDelete(team.id)}>Eliminar</Button>
+                    <Typography variant="h6">{tag.name}</Typography>
+                    <div style={{ backgroundColor: tag.bgColor, color: tag.textColor, padding: '0.5rem' }}>
+                      {tag.name}
+                    </div>
+                    <Button onClick={() => openEdit(tag)}>Editar</Button>
+                    <Button color="error" onClick={() => handleDelete(tag.id)}>Eliminar</Button>
                   </CardContent>
                 </Card>
               </Grid>
@@ -175,19 +176,17 @@ export default function TeamList({ modelId, open, onClose }) {
           </Grid>
         )}
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>{editing ? 'Editar' : 'Nuevo'} equipo</DialogTitle>
+          <DialogTitle>{editing ? 'Editar' : 'Nueva'} etiqueta</DialogTitle>
           <DialogContent>
             <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-            <TextField required label="Orden *" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value, 10) })} fullWidth sx={{ mt: 2 }} />
+            <TextField required label="Color fondo *" type="color" value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
+            <TextField required label="Color texto *" type="color" value={form.textColor} onChange={(e) => setForm({ ...form, textColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-        {rolesTeam && (
-          <RoleList open={!!rolesTeam} teamId={rolesTeam.id} onClose={() => setRolesTeam(null)} />
-        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cerrar</Button>
