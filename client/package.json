@@ -7,7 +7,7 @@
     "cra-template": "1.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "^0.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -39,6 +39,6 @@
     "@emotion/styled": "^11.14.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
-    "jspdf": "^2.5.1"
+    "jspdf": "^3.0.1"
   }
 }

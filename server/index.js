@@ -128,14 +128,19 @@ Tag.belongsToMany(Node, { through: NodeTag, as: 'nodes', foreignKey: 'tagId' });
 // RASCI relation between nodes and roles
 const NodeRasci = sequelize.define('NodeRasci', {
   responsibilities: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+});
+
 const NodeAttachment = sequelize.define('NodeAttachment', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false
   },
   filePath: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false
   }
 });
 Node.hasMany(NodeRasci, { as: 'rascis', foreignKey: 'nodeId' });
@@ -387,6 +392,8 @@ app.get('/api/nodes/:id/rascis', async (req, res) => {
     include: { model: Role, include: Team }
   });
   res.json(rascis);
+});
+
 // Attachment routes
 app.get('/api/nodes/:nodeId/attachments', async (req, res) => {
   const attachments = await NodeAttachment.findAll({
