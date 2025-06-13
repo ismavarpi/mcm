@@ -48,9 +48,11 @@ const CategoriaDocumento = sequelize.define('CategoriaDocumento', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  // Permitir nulos para evitar fallos de sincronización con registros
+  // existentes cuando la columna aún no estaba definida.
   modelId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   }
 }, { tableName: 'categoria_documentos' });
 
@@ -73,7 +75,9 @@ const Tag = sequelize.define('Tag', {
 Model.hasMany(Tag, { as: 'tags', foreignKey: 'modelId' });
 Tag.belongsTo(Model, { foreignKey: 'modelId' });
 Model.hasMany(CategoriaDocumento, { as: 'documentCategories', foreignKey: 'modelId' });
-CategoriaDocumento.belongsTo(Model, { foreignKey: 'modelId' });
+// El vínculo permite valores nulos para compatibilidad con bases de datos ya
+// existentes donde la columna pueda carecer de dato inicial.
+CategoriaDocumento.belongsTo(Model, { foreignKey: { name: 'modelId', allowNull: true } });
 
 // Team definition
 const Team = sequelize.define('Team', {
