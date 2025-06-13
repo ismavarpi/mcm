@@ -363,7 +363,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#fff', overflow: 'auto', zIndex: 1300 }}>
+    <div style={{ position: 'fixed', top: '64px', left: 0, width: '100%', height: 'calc(100% - 64px)', backgroundColor: '#fff', overflow: 'auto', zIndex: 1300 }}>
       <div style={{ display: 'flex', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #ccc' }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onClose}>Volver a modelos</Button>
         <h2 style={{ marginLeft: '1rem' }}>Nodos del modelo {modelName}</h2>
