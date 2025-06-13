@@ -1,27 +1,40 @@
+// Framework web principal
 const express = require('express');
+// Middleware para parsear cuerpos JSON
 const bodyParser = require('body-parser');
+// Habilitamos CORS para permitir peticiones remotas
 const cors = require('cors');
+// Librería ORM para gestionar la base de datos
 const { Sequelize, DataTypes, Op } = require('sequelize');
+// Manejo de cargas de ficheros
 const multer = require('multer');
+// Acceso al sistema de archivos
 const fs = require('fs');
+// Utilidades de rutas
 const path = require('path');
 
+// Cargamos las variables de entorno desde .env
 require("dotenv").config();
+// Creamos la aplicación de Express
 const app = express();
+// Activamos CORS en todas las rutas
 app.use(cors());
+// Habilitamos el parseo automático de JSON
 app.use(bodyParser.json());
+// Configuramos multer para almacenar archivos subidos en la carpeta uploads
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
+// Servimos estáticamente los archivos subidos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database connection
+// Conexión a la base de datos utilizando Sequelize
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'mcm',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || '',
+  process.env.DB_NAME || 'mcm', // nombre de la base
+  process.env.DB_USER || 'root', // usuario
+  process.env.DB_PASSWORD || '', // contraseña
   {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
-  dialect: 'mariadb'
+  host: process.env.DB_HOST || 'localhost', // host de la base
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306, // puerto
+  dialect: 'mariadb' // tipo de base de datos
 });
 
 // Model definition for example models
