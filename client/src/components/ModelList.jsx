@@ -181,7 +181,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                     <TableCell>
                       <Button onClick={() => openEdit(model)}>Editar</Button>
                       <Button onClick={() => openTags(model)}>Tags</Button>
-                      <Button onClick={() => openTeams(model)}>Equipos</Button>
+                      <Button onClick={() => openTeams(model)}>Equipos y roles</Button>
                       <Button onClick={() => openNodes(model)}>Nodos</Button>
                       <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
                     </TableCell>
@@ -203,7 +203,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                     <>
                       <Button onClick={() => openEdit(model)}>Editar</Button>
                       <Button onClick={() => openTags(model)}>Tags</Button>
-                      <Button onClick={() => openTeams(model)}>Equipos</Button>
+                      <Button onClick={() => openTeams(model)}>Equipos y roles</Button>
                       <Button onClick={() => openNodes(model)}>Nodos</Button>
                       <Button color="error" onClick={() => handleDelete(model.id)}>Eliminar</Button>
                     </>

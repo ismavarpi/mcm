@@ -118,7 +118,7 @@ export default function TeamList({ modelId, open, onClose }) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Equipos</DialogTitle>
+      <DialogTitle>Equipos y roles</DialogTitle>
       <DialogContent>
         <Button onClick={() => setView(view === 'table' ? 'cards' : 'table')}>Cambiar vista</Button>
         <Button onClick={openCreate}>Nuevo</Button>
@@ -186,7 +186,7 @@ export default function TeamList({ modelId, open, onClose }) {
           </DialogActions>
         </Dialog>
         {rolesTeam && (
-          <RoleList open={!!rolesTeam} teamId={rolesTeam.id} onClose={() => setRolesTeam(null)} />
+          <RoleList open={!!rolesTeam} teamId={rolesTeam.id} teamName={rolesTeam.name} onClose={() => setRolesTeam(null)} />
         )}
       </DialogContent>
       <DialogActions>
