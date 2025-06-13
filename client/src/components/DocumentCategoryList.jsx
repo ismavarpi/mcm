@@ -73,6 +73,10 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
   React.useEffect(() => { if (open) load(); }, [open]);
 
   const handleSave = async () => {
+    if (!form.name.trim()) {
+      alert('El nombre es obligatorio');
+      return;
+    }
     if (editing) {
       await axios.put(`/api/categoria-documentos/${editing.id}`, form);
     } else {
