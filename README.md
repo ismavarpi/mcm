@@ -42,6 +42,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    DB_USER=mcm
    DB_PASSWORD=clave_segura
    DB_HOST=localhost
+   DB_PORT=3309
    ENV
    cd ..
    ```
