@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, Op } = require('sequelize');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -101,6 +101,16 @@ const Node = sequelize.define('Node', {
     allowNull: false,
     defaultValue: 0,
   },
+  codePattern: {
+    type: DataTypes.STRING(5),
+    allowNull: false,
+    defaultValue: 'ORDER',
+  },
+  code: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: '',
+  },
   modelId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -184,6 +194,34 @@ async function removeTagsFromDescendants(parentId, tagIds) {
     const newIds = currentIds.filter(id => !tagIds.includes(id));
     await child.setTags(newIds);
     await removeTagsFromDescendants(child.id, tagIds);
+  }
+}
+
+async function computeNodeCode(node) {
+  let prefix = '';
+  if (node.parentId) {
+    const parent = await Node.findByPk(node.parentId);
+    prefix = parent.code ? parent.code + '.' : '';
+  }
+  let part;
+  if (node.codePattern === 'ORDER') {
+    if (!node.order || node.order === 0) {
+      const max = await Node.max('order', { where: { parentId: node.parentId } });
+      node.order = (max || 0) + 1;
+    }
+    part = String(node.order);
+  } else {
+    part = node.codePattern;
+  }
+  return prefix + part;
+}
+
+async function updateNodeAndDescendants(node) {
+  node.code = await computeNodeCode(node);
+  await node.save();
+  const children = await Node.findAll({ where: { parentId: node.id } });
+  for (const child of children) {
+    await updateNodeAndDescendants(child);
   }
 }
 
@@ -386,12 +424,17 @@ app.get('/api/models/:modelId/nodes', async (req, res) => {
 });
 
 app.post('/api/models/:modelId/nodes', async (req, res) => {
-  const { tagIds = [], rasci, ...data } = req.body;
+  const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
   const parentTags = data.parentId
     ? (await Node.findByPk(data.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)
     : [];
   const finalTags = Array.from(new Set([...tagIds, ...parentTags]));
-  const node = await Node.create({ ...data, modelId: req.params.modelId });
+  if (codePattern !== 'ORDER') {
+    const conflict = await Node.findOne({ where: { parentId: data.parentId || null, codePattern } });
+    if (conflict) return res.status(400).json({ error: 'Código duplicado' });
+  }
+  const node = await Node.create({ ...data, modelId: req.params.modelId, codePattern });
+  await updateNodeAndDescendants(node);
   if (finalTags.length) await node.setTags(finalTags);
   if (rasci && rasci.length) {
     for (const line of rasci) {
@@ -406,9 +449,14 @@ app.post('/api/models/:modelId/nodes', async (req, res) => {
 });
 
 app.put('/api/nodes/:id', async (req, res) => {
-  const { tagIds = [], rasci, ...data } = req.body;
+  const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
   const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
-  await node.update(data);
+  if (codePattern !== 'ORDER') {
+    const conflict = await Node.findOne({ where: { parentId: data.parentId ?? node.parentId, codePattern, id: { [Op.ne]: node.id } } });
+    if (conflict) return res.status(400).json({ error: 'Código duplicado' });
+  }
+  await node.update({ ...data, codePattern });
+  await updateNodeAndDescendants(node);
   const oldTagIds = node.tags.map(t => t.id);
   const parentTags = node.parentId
     ? (await Node.findByPk(node.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)

@@ -32,8 +32,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 function csvExport(data) {
-  const header = 'Nombre;Nodo padre;Modelo';
-  const rows = data.map(n => `${n.name};${n.parentId || ''};${n.modelId}`);
+  const header = 'Código;Nombre;Nodo padre;Modelo';
+  const rows = data.map(n => `${n.code};${n.name};${n.parentId || ''};${n.modelId}`);
   const csvContent = [header, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -50,7 +50,7 @@ function pdfExport(data) {
   doc.text('Nodos', 10, 10);
   let y = 20;
   data.forEach(n => {
-    doc.text(`${n.name} - padre: ${n.parentId || 'ninguno'}`, 10, y);
+    doc.text(`[${n.code}] ${n.name} - padre: ${n.parentId || 'ninguno'}`, 10, y);
     y += 10;
   });
   doc.save('nodos.pdf');
@@ -60,7 +60,7 @@ export default function NodeList({ modelId, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ name: '', parentId: '' });
+  const [form, setForm] = React.useState({ name: '', parentId: '', patternType: 'order', patternText: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -136,8 +136,9 @@ export default function NodeList({ modelId, open, onClose }) {
       return;
     }
     const payload = {
-      ...form,
+      name: form.name,
       parentId: form.parentId || null,
+      codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
@@ -149,7 +150,7 @@ export default function NodeList({ modelId, open, onClose }) {
     }
     setFocusNodeId(res.data.id);
     setDialogOpen(false);
-    setForm({ name: '', parentId: '' });
+    setForm({ name: '', parentId: '', patternType: 'order', patternText: '' });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
@@ -165,7 +166,12 @@ export default function NodeList({ modelId, open, onClose }) {
 
   const openEdit = async (node) => {
     setEditing(node);
-    setForm({ name: node.name, parentId: node.parentId || '' });
+    setForm({
+      name: node.name,
+      parentId: node.parentId || '',
+      patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
+      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern
+    });
     const parent = nodes.find(n => n.id === node.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -187,7 +193,7 @@ export default function NodeList({ modelId, open, onClose }) {
 
   const openCreate = (parentId = '') => {
     setEditing(null);
-    setForm({ name: '', parentId });
+    setForm({ name: '', parentId, patternType: 'order', patternText: '' });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -228,6 +234,7 @@ export default function NodeList({ modelId, open, onClose }) {
           itemId={String(n.id)}
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
+              <strong style={{ marginRight: '0.25rem' }}>[{n.code}]</strong>
               <span style={{ marginRight: '0.5rem' }}>{n.name}</span>
 
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -389,6 +396,28 @@ export default function NodeList({ modelId, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel>Patrón de código</InputLabel>
+              <Select
+                label="Patrón de código"
+                value={form.patternType}
+                onChange={e => setForm({ ...form, patternType: e.target.value })}
+              >
+                <MenuItem value="order">Por orden</MenuItem>
+                <MenuItem value="text">Texto</MenuItem>
+              </Select>
+            </FormControl>
+            {form.patternType === 'text' && (
+              <TextField
+                required
+                label="Texto"
+                value={form.patternText}
+                inputProps={{ maxLength: 5 }}
+                onChange={e => setForm({ ...form, patternText: e.target.value.toUpperCase() })}
+                fullWidth
+                sx={{ mt: 2 }}
+              />
+            )}
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Etiquetas</InputLabel>
               <Select
