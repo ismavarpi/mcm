@@ -14,7 +14,11 @@ const upload = multer({ dest: path.join(__dirname, 'uploads') });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database connection
-const sequelize = new Sequelize(process.env.DB_NAME || 'mcm', process.env.DB_USER || 'root', process.env.DB_PASS || '', {
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'mcm',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '',
+  {
   host: process.env.DB_HOST || 'localhost',
   dialect: 'mariadb'
 });
