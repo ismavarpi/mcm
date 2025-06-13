@@ -97,6 +97,10 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
   React.useEffect(() => { load(); }, []);
 
   const handleSave = async () => {
+    if (editing && parseInt(form.parentId) === editing.id) {
+      alert('Un modelo no puede ser su propio padre');
+      return;
+    }
     if (editing) {
       await axios.put(`/api/models/${editing.id}`, { ...form, parentId: form.parentId || null });
     } else {
