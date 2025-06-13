@@ -208,6 +208,9 @@ app.post('/api/models', async (req, res) => {
 });
 
 app.put('/api/models/:id', async (req, res) => {
+  if (req.body.parentId && parseInt(req.body.parentId) === parseInt(req.params.id)) {
+    return res.status(400).json({ error: 'Un modelo no puede ser su propio padre' });
+  }
   await Model.update(req.body, { where: { id: req.params.id } });
   const model = await Model.findByPk(req.params.id);
   res.json(model);
