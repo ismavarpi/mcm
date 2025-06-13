@@ -173,9 +173,9 @@ export default function ParameterList() {
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>{editing ? 'Editar' : 'Nuevo'} parámetro</DialogTitle>
         <DialogContent>
-          <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-          <TextField required label="Valor *" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
-          <TextField required label="Valor por defecto *" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
+          <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
+          <TextField required label="Valor" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
+          <TextField required label="Valor por defecto" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>

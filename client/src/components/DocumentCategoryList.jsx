@@ -166,7 +166,7 @@ export default function DocumentCategoryList() {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
+            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
