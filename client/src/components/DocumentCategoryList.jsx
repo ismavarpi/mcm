@@ -173,6 +173,7 @@ export default function DocumentCategoryList() {
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
+
     </div>
   );
 }
