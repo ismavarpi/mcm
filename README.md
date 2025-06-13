@@ -9,10 +9,16 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    sudo apt update
    sudo apt install nodejs npm mariadb-server
    ```
-2. **Obtener el código**
+2. **Obtener o actualizar el código**
+   Si es la primera vez:
    ```bash
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
+   ```
+   Si el repositorio ya está clonado en el servidor, simplemente actualízalo:
+   ```bash
+   cd mcm
+   git pull
    ```
 3. **Conectar a la base de datos**
    
