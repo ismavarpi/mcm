@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import useProcessingAction from '../hooks/useProcessingAction';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -156,7 +157,7 @@ export default function NodeList({ modelId, open, onClose }) {
 
   React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
 
-  const handleSave = async () => {
+  const [saveNode, saving] = useProcessingAction(async () => {
     const countA = rasciLines.filter(l => l.responsibilities.includes('A')).length;
     const countR = rasciLines.filter(l => l.responsibilities.includes('R')).length;
     if (countA > 1 || countR > 1) {
@@ -167,13 +168,13 @@ export default function NodeList({ modelId, open, onClose }) {
       alert('El texto del patrón de código es obligatorio');
       return;
     }
-      const payload = {
-        name: form.name,
-        parentId: form.parentId || null,
-        codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
-        tagIds: selectedTags,
-        rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
-      };
+    const payload = {
+      name: form.name,
+      parentId: form.parentId || null,
+      codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
+      tagIds: selectedTags,
+      rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
+    };
     let res;
     if (editing) {
       res = await axios.put(`/api/nodes/${editing.id}`, payload);
@@ -187,12 +188,16 @@ export default function NodeList({ modelId, open, onClose }) {
     setRasciLines([]);
     setEditing(null);
     load();
-  };
+  });
 
-  const handleDelete = async (id) => {
+  const [removeNode, removing] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/nodes/${id}`);
+    load();
+  });
+
+  const handleDelete = (id) => {
     if (window.confirm('¿Eliminar este nodo y todos sus nodos hijos?')) {
-      await axios.delete(`/api/nodes/${id}`);
-      load();
+      removeNode(id);
     }
   };
 
@@ -327,7 +332,7 @@ export default function NodeList({ modelId, open, onClose }) {
                     size="small"
                     color="error"
                     onClick={() => handleDelete(n.id)}
-                    disabled={n.name === 'Raiz' && n.parentId === null}
+                    disabled={(n.name === 'Raiz' && n.parentId === null) || removing}
                     sx={{ ml: 0.5 }}
                   >
                     <DeleteIcon fontSize="inherit" />
@@ -649,8 +654,8 @@ export default function NodeList({ modelId, open, onClose }) {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Guardar</Button>
+            <Button onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={saveNode} disabled={saving}>Guardar</Button>
           </DialogActions>
         </Dialog>
       </DialogContent>

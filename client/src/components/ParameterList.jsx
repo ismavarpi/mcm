@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import useProcessingAction from '../hooks/useProcessingAction';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -72,7 +73,7 @@ export default function ParameterList() {
 
   React.useEffect(() => { load(); }, []);
 
-  const handleSave = async () => {
+  const [save, saving] = useProcessingAction(async () => {
     if (editing) {
       await axios.put(`/api/parameters/${editing.id}`, form);
     } else {
@@ -82,13 +83,12 @@ export default function ParameterList() {
     setForm({ name: '', value: '', defaultValue: '' });
     setEditing(null);
     load();
-  };
+  });
 
-
-  const handleReset = async (id) => {
+  const [resetParam, resetting] = useProcessingAction(async (id) => {
     await axios.post(`/api/parameters/${id}/reset`);
     load();
-  };
+  });
 
   const openEdit = (param) => {
     setEditing(param);
@@ -180,7 +180,7 @@ export default function ParameterList() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Reset">
-                      <IconButton color="secondary" onClick={() => handleReset(param.id)}>
+                      <IconButton color="secondary" onClick={() => resetParam(param.id)} disabled={resetting}>
                         <RestoreIcon />
                       </IconButton>
                     </Tooltip>
@@ -206,7 +206,7 @@ export default function ParameterList() {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Reset">
-                    <IconButton color="secondary" onClick={() => handleReset(param.id)}>
+                    <IconButton color="secondary" onClick={() => resetParam(param.id)} disabled={resetting}>
                       <RestoreIcon />
                     </IconButton>
                   </Tooltip>
@@ -225,8 +225,8 @@ export default function ParameterList() {
           <TextField required label="Valor por defecto" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSave}>Guardar</Button>
+          <Button onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
+          <Button onClick={save} disabled={saving}>Guardar</Button>
         </DialogActions>
       </Dialog>
     </div>

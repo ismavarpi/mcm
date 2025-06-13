@@ -5,12 +5,15 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 // Componente principal de la aplicación
 import App from './App.jsx';
+import { ProcessingProvider } from './hooks/useProcessing';
 
 // Creamos el nodo raíz donde se montará React
 const root = ReactDOM.createRoot(document.getElementById('root'));
 // Renderizamos la aplicación dentro de React.StrictMode
 root.render(
   <React.StrictMode>
-    <App />
+    <ProcessingProvider>
+      <App />
+    </ProcessingProvider>
   </React.StrictMode>
 );

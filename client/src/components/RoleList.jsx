@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import useProcessingAction from '../hooks/useProcessingAction';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -72,7 +73,7 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
 
   React.useEffect(() => { if (open) load(); }, [open]);
 
-  const handleSave = async () => {
+  const [saveRole, saving] = useProcessingAction(async () => {
     if (editing) {
       await axios.put(`/api/roles/${editing.id}`, form);
     } else {
@@ -82,12 +83,16 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
     setForm({ name: '', order: 0 });
     setEditing(null);
     load();
-  };
+  });
 
-  const handleDelete = async (id) => {
+  const [removeRole, removing] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/roles/${id}`);
+    load();
+  });
+
+  const handleDelete = (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/roles/${id}`);
-      load();
+      removeRole(id);
     }
   };
 
@@ -180,7 +185,7 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(role.id)}>
+                        <IconButton color="error" onClick={() => handleDelete(role.id)} disabled={removing}>
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
@@ -203,7 +208,7 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => handleDelete(role.id)}>
+                      <IconButton color="error" onClick={() => handleDelete(role.id)} disabled={removing}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -220,8 +225,8 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
             <TextField required label="Orden" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value, 10) })} fullWidth sx={{ mt: 2 }} />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Guardar</Button>
+            <Button onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={saveRole} disabled={saving}>Guardar</Button>
           </DialogActions>
         </Dialog>
       </DialogContent>
