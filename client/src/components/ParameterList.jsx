@@ -26,7 +26,6 @@ import TableRowsIcon from '@mui/icons-material/TableRows';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { jsPDF } from 'jspdf';
@@ -185,11 +184,6 @@ export default function ParameterList() {
                         <RestoreIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => handleDelete(param.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
 
                   </TableCell>
                 </TableRow>
@@ -214,11 +208,6 @@ export default function ParameterList() {
                   <Tooltip title="Reset">
                     <IconButton color="secondary" onClick={() => handleReset(param.id)}>
                       <RestoreIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Eliminar">
-                    <IconButton color="error" onClick={() => handleDelete(param.id)}>
-                      <DeleteIcon />
                     </IconButton>
                   </Tooltip>
 

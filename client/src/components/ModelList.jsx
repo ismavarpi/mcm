@@ -292,7 +292,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
         <DialogTitle>{editing ? 'Editar' : 'Nuevo'} modelo</DialogTitle>
         <DialogContent>
           <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-          <TextField required label="Autor" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} fullWidth />
+          <TextField required label="Autor" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} fullWidth sx={{ mt: 2 }} />
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Modelo padre</InputLabel>
             <Select
