@@ -55,7 +55,7 @@ function pdfExport(data) {
   doc.save('roles.pdf');
 }
 
-export default function RoleList({ teamId, open, onClose }) {
+export default function RoleList({ teamId, teamName, open, onClose }) {
   const [roles, setRoles] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -121,7 +121,7 @@ export default function RoleList({ teamId, open, onClose }) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Roles</DialogTitle>
+      <DialogTitle>{`Roles del equipo ${teamName}`}</DialogTitle>
       <DialogContent>
         <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
           <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
