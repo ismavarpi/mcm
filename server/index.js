@@ -246,7 +246,7 @@ async function initDatabase(retries = 5, delayMs = 2000) {
   for (let attempt = 1; ; attempt++) {
     try {
       await sequelize.authenticate();
-      await sequelize.sync();
+      await sequelize.sync({ alter: true });
       await Parameter.findOrCreate({
         where: { name: 'Nombre de la aplicación' },
         defaults: { value: 'MCM', defaultValue: 'MCM' }
