@@ -223,7 +223,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                           <LabelIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Equipos">
+                      <Tooltip title="Equipos y roles">
                         <IconButton onClick={() => openTeams(model)}>
                           <GroupsIcon />
                         </IconButton>
@@ -265,7 +265,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
                           <LabelIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Equipos">
+                      <Tooltip title="Equipos y roles">
                         <IconButton onClick={() => openTeams(model)}>
                           <GroupsIcon />
                         </IconButton>

@@ -48,7 +48,7 @@ function csvExport(data) {
 
 function pdfExport(data) {
   const doc = new jsPDF();
-  doc.text('Equipos', 10, 10);
+  doc.text('Equipos y roles', 10, 10);
   let y = 20;
   data.forEach(t => {
     doc.text(`${t.order} - ${t.name}`, 10, y);
@@ -128,7 +128,7 @@ export default function TeamList({ modelId, open, onClose }) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Equipos</DialogTitle>
+      <DialogTitle>Equipos y roles</DialogTitle>
       <DialogContent>
         <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
           <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
@@ -242,7 +242,12 @@ export default function TeamList({ modelId, open, onClose }) {
           </DialogActions>
         </Dialog>
         {rolesTeam && (
-          <RoleList open={!!rolesTeam} teamId={rolesTeam.id} onClose={() => setRolesTeam(null)} />
+          <RoleList
+            open={!!rolesTeam}
+            teamId={rolesTeam.id}
+            teamName={rolesTeam.name}
+            onClose={() => setRolesTeam(null)}
+          />
         )}
       </DialogContent>
       <DialogActions>
