@@ -65,6 +65,7 @@ export default function NodeList({ modelId, open, onClose }) {
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
   const [selectedTags, setSelectedTags] = React.useState([]);
+  const [filterTags, setFilterTags] = React.useState([]);
   const [teams, setTeams] = React.useState([]);
   const [roles, setRoles] = React.useState({});
   const [rasciLines, setRasciLines] = React.useState([]);
@@ -197,9 +198,30 @@ export default function NodeList({ modelId, open, onClose }) {
     setDialogOpen(true);
   };
 
+  const visibleIds = React.useMemo(() => {
+    const map = Object.fromEntries(nodes.map(n => [n.id, n]));
+    const ids = new Set();
+    if (!filter && filterTags.length === 0) {
+      nodes.forEach(n => ids.add(n.id));
+      return ids;
+    }
+    nodes.forEach(n => {
+      const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
+      const matchesTags = filterTags.length === 0 || (n.tags && n.tags.some(t => filterTags.includes(t.id)));
+      if (matchesText && matchesTags) {
+        let current = n;
+        while (current) {
+          ids.add(current.id);
+          current = current.parentId ? map[current.parentId] : null;
+        }
+      }
+    });
+    return ids;
+  }, [nodes, filter, filterTags]);
+
   const renderTree = (parentId = null) => {
     return nodes
-      .filter(n => n.parentId === parentId && n.name.toLowerCase().includes(filter.toLowerCase()))
+      .filter(n => n.parentId === parentId && visibleIds.has(n.id))
       .map(n => (
         <TreeItem
           key={n.id}
@@ -211,12 +233,17 @@ export default function NodeList({ modelId, open, onClose }) {
                 {n.tags && n.tags.map(tag => (
                   <span
                     key={tag.id}
+                    onClick={() => {
+                      setShowFilters(true);
+                      setFilterTags([tag.id]);
+                    }}
                     style={{
                       backgroundColor: tag.bgColor,
                       color: tag.textColor,
                       padding: '0 0.25rem',
                       marginLeft: '0.5rem',
-                      borderRadius: '4px'
+                      borderRadius: '4px',
+                      cursor: 'pointer'
                     }}
                   >
                     {tag.name}
@@ -293,13 +320,43 @@ export default function NodeList({ modelId, open, onClose }) {
         </Tooltip>
         {showFilters && (
           <div style={{ margin: '1rem 0' }}>
-          <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
-          <Tooltip title="Reset">
-            <IconButton onClick={() => setFilter('')}>
-              <RestartAltIcon />
-            </IconButton>
-          </Tooltip>
-        </div>
+            <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} sx={{ mr: 1 }} />
+            <FormControl sx={{ mr: 1, minWidth: 120 }}>
+              <InputLabel>Etiquetas</InputLabel>
+              <Select
+                multiple
+                label="Etiquetas"
+                value={filterTags}
+                onChange={e => setFilterTags(e.target.value)}
+                renderValue={selected => (
+                  <div>
+                    {selected.map(id => {
+                      const tag = tags.find(t => t.id === id);
+                      return (
+                        <span
+                          key={id}
+                          style={{ backgroundColor: tag.bgColor, color: tag.textColor, padding: '0 0.25rem', marginRight: '0.25rem', borderRadius: '4px' }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              >
+                {tags.map(tag => (
+                  <MenuItem key={tag.id} value={tag.id}>
+                    <span style={{ backgroundColor: tag.bgColor, color: tag.textColor, padding: '0 0.25rem', borderRadius: '4px' }}>{tag.name}</span>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Tooltip title="Reset">
+              <IconButton onClick={() => { setFilter(''); setFilterTags([]); }}>
+                <RestartAltIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         )}
         <TreeView
           slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
