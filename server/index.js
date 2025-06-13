@@ -93,6 +93,7 @@ const Node = sequelize.define('Node', {
   order: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: 0,
   },
   modelId: {
     type: DataTypes.INTEGER,
