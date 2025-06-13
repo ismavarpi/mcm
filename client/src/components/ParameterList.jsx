@@ -75,12 +75,6 @@ export default function ParameterList() {
     load();
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/parameters/${id}`);
-      load();
-    }
-  };
 
   const handleReset = async (id) => {
     await axios.post(`/api/parameters/${id}/reset`);
@@ -153,7 +147,6 @@ export default function ParameterList() {
                   <TableCell>
                     <Button onClick={() => openEdit(param)}>Editar</Button>
                     <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
-                    <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -171,7 +164,6 @@ export default function ParameterList() {
                   <Typography variant="caption">Por defecto: {param.defaultValue}</Typography>
                   <Button onClick={() => openEdit(param)}>Editar</Button>
                   <Button color="secondary" onClick={() => handleReset(param.id)}>Reset</Button>
-                  <Button color="error" onClick={() => handleDelete(param.id)}>Eliminar</Button>
                 </CardContent>
               </Card>
             </Grid>
