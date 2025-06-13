@@ -121,6 +121,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
 
   const openTeams = (model) => {
     setTeamsModel(model);
+  };
   const openNodes = (model) => {
     setNodesModel(model);
   };
@@ -242,6 +243,7 @@ export default function ModelList({ readOnly = false, initialView = 'table' }) {
       )}
       {teamsModel && (
         <TeamList open={!!teamsModel} modelId={teamsModel.id} onClose={() => setTeamsModel(null)} />
+      )}
       {nodesModel && (
         <NodeList open={!!nodesModel} modelId={nodesModel.id} onClose={() => setNodesModel(null)} />
       )}
