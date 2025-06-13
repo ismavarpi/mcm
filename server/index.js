@@ -292,14 +292,30 @@ app.get('/api/models/:modelId/categoria-documentos', async (req, res) => {
 });
 
 app.post('/api/models/:modelId/categoria-documentos', async (req, res) => {
-  const cat = await CategoriaDocumento.create({ ...req.body, modelId: req.params.modelId });
-  res.json(cat);
+  try {
+    const model = await Model.findByPk(req.params.modelId);
+    if (!model) return res.status(404).json({ error: 'Modelo no encontrado' });
+    const cat = await CategoriaDocumento.create({
+      ...req.body,
+      modelId: model.id
+    });
+    res.json(cat);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al crear categoría' });
+  }
 });
 
 app.put('/api/categoria-documentos/:id', async (req, res) => {
-  await CategoriaDocumento.update(req.body, { where: { id: req.params.id } });
-  const cat = await CategoriaDocumento.findByPk(req.params.id);
-  res.json(cat);
+  try {
+    const cat = await CategoriaDocumento.findByPk(req.params.id);
+    if (!cat) return res.status(404).json({ error: 'Categoría no encontrada' });
+    await cat.update(req.body);
+    res.json(cat);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al actualizar categoría' });
+  }
 });
 
 app.delete('/api/categoria-documentos/:id', async (req, res) => {
