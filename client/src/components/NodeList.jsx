@@ -168,7 +168,7 @@ export default function NodeList({ modelId, open, onClose }) {
       .map(n => (
         <TreeItem
           key={n.id}
-          nodeId={String(n.id)}
+          itemId={String(n.id)}
           label={
             <div>
               {n.name}
