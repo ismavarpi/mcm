@@ -202,10 +202,11 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
   };
 
-  const moveNode = async (id, direction) => {
+  const [moveNode, moving] = useProcessingAction(async (id, direction) => {
     await axios.post(`/api/nodes/${id}/move`, { direction });
+    setFocusNodeId(id);
     load();
-  };
+  });
 
   const openEdit = async (node) => {
     setEditing(node);
@@ -311,14 +312,24 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </Tooltip>
                 <Tooltip title="Subir">
                   <span>
-                    <IconButton size="small" onClick={() => moveNode(n.id, 'up')} disabled={idx === 0} sx={{ ml: 0.5 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => moveNode(n.id, 'up')}
+                      disabled={idx === 0 || moving}
+                      sx={{ ml: 0.5 }}
+                    >
                       <ArrowUpwardIcon fontSize="inherit" />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <Tooltip title="Bajar">
                   <span>
-                    <IconButton size="small" onClick={() => moveNode(n.id, 'down')} disabled={idx === children.length - 1} sx={{ ml: 0.5 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => moveNode(n.id, 'down')}
+                      disabled={idx === children.length - 1 || moving}
+                      sx={{ ml: 0.5 }}
+                    >
                       <ArrowDownwardIcon fontSize="inherit" />
                     </IconButton>
                   </span>
