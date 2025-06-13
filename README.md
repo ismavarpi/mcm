@@ -16,12 +16,16 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    ```
 3. **Preparar la base de datos**
    ```sql
+   Conectar a la base de datos
+    mysql -h localhost -P 3309 -u root -p
+   ```
+   ```sql
    CREATE DATABASE mcm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    CREATE USER 'mcm'@'localhost' IDENTIFIED BY 'clave_segura';
    GRANT ALL PRIVILEGES ON mcm.* TO 'mcm'@'localhost';
    FLUSH PRIVILEGES;
    ```
-4. **Configurar la API**
+5. **Configurar la API**
    ```bash
    cd server
    npm install
@@ -33,7 +37,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    ENV
    cd ..
    ```
-5. **Preparar el cliente**
+6. **Preparar el cliente**
    ```bash
    cd client
    npm install
