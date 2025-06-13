@@ -28,6 +28,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import GroupIcon from '@mui/icons-material/Group';
+import Badge from '@mui/material/Badge';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { jsPDF } from 'jspdf';
 import RoleList from './RoleList';
@@ -67,9 +68,18 @@ export default function TeamList({ modelId, open, onClose }) {
   const [filter, setFilter] = React.useState('');
   const [sort, setSort] = React.useState({ key: 'order', dir: 'asc' });
   const [rolesTeam, setRolesTeam] = React.useState(null);
+  const [roleCounts, setRoleCounts] = React.useState({});
 
   const load = async () => {
     const res = await axios.get(`/api/models/${modelId}/teams`);
+    const counts = {};
+    await Promise.all(
+      res.data.map(async t => {
+        const r = await axios.get(`/api/teams/${t.id}/roles`);
+        counts[t.id] = r.data.length;
+      })
+    );
+    setRoleCounts(counts);
     setTeams(res.data);
   };
 
@@ -188,7 +198,9 @@ export default function TeamList({ modelId, open, onClose }) {
                       </Tooltip>
                       <Tooltip title="Roles">
                         <IconButton onClick={() => openRoles(team)}>
-                          <GroupIcon />
+                          <Badge badgeContent={roleCounts[team.id] || 0} color="primary" overlap="circular">
+                            <GroupIcon />
+                          </Badge>
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
@@ -216,7 +228,9 @@ export default function TeamList({ modelId, open, onClose }) {
                     </Tooltip>
                     <Tooltip title="Roles">
                       <IconButton onClick={() => openRoles(team)}>
-                        <GroupIcon />
+                        <Badge badgeContent={roleCounts[team.id] || 0} color="primary" overlap="circular">
+                          <GroupIcon />
+                        </Badge>
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Eliminar">
