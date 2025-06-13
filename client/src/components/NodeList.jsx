@@ -207,45 +207,43 @@ export default function NodeList({ modelId, open, onClose }) {
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '0.5rem' }}>{n.name}</span>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {n.tags && n.tags.map(tag => (
-                  <span
-                    key={tag.id}
-                    style={{
-                      backgroundColor: tag.bgColor,
-                      color: tag.textColor,
-                      padding: '0 0.25rem',
-                      marginLeft: '0.5rem',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    {tag.name}
-                  </span>
-                ))}
-              </div>
-              <div style={{ marginLeft: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                <Tooltip title="Añadir">
-                  <IconButton size="small" onClick={() => openCreate(n.id)} sx={{ ml: 0.5 }}>
-                    <AddIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Editar">
-                  <IconButton size="small" onClick={() => openEdit(n)} sx={{ ml: 0.5 }}>
-                    <EditIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Eliminar">
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleDelete(n.id)}
-                    disabled={n.name === 'Raiz' && n.parentId === null}
-                    sx={{ ml: 0.5 }}
-                  >
-                    <DeleteIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginRight: '0.75rem', marginLeft: '0.75rem' }}>
+              {n.tags && n.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  style={{
+                    backgroundColor: tag.bgColor,
+                    color: tag.textColor,
+                    padding: '0 0.25rem',
+                    borderRadius: '4px'
+                  }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginRight: '0.5rem' }}>
+              <Tooltip title="Añadir">
+                <IconButton size="small" onClick={() => openCreate(n.id)}>
+                  <AddIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Editar">
+                <IconButton size="small" onClick={() => openEdit(n)}>
+                  <EditIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Eliminar">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(n.id)}
+                  disabled={n.name === 'Raiz' && n.parentId === null}
+                >
+                  <DeleteIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            </div>
             </div>
           }
         >
