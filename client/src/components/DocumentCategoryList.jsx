@@ -55,7 +55,7 @@ function pdfExport(data) {
   doc.save('categorias.pdf');
 }
 
-export default function DocumentCategoryList({ open, onClose }) {
+export default function DocumentCategoryList() {
   const [cats, setCats] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -70,7 +70,7 @@ export default function DocumentCategoryList({ open, onClose }) {
     setCats(res.data);
   };
 
-  React.useEffect(() => { if (open) load(); }, [open]);
+  React.useEffect(() => { load(); }, []);
 
   const handleSave = async () => {
     if (editing) {
@@ -148,6 +148,7 @@ export default function DocumentCategoryList({ open, onClose }) {
             <FilterListIcon />
           </IconButton>
         </Tooltip>
+
         {showFilters && (
           <div style={{ margin: '1rem 0' }}>
           <TextField label="Buscar" value={filter} onChange={e => setFilter(e.target.value)} />
@@ -214,17 +215,14 @@ export default function DocumentCategoryList({ open, onClose }) {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nueva'} categoría</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
+            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+
+    </div>
   );
 }

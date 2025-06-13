@@ -257,7 +257,7 @@ export default function NodeList({ modelId, open, onClose }) {
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
           <DialogContent>
-            <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
+            <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Nodo padre</InputLabel>
               <Select
@@ -373,10 +373,10 @@ export default function NodeList({ modelId, open, onClose }) {
             {editing && (
               <>
                 <div style={{ marginTop: '1rem' }}>
-                  <FormControl fullWidth sx={{ mt: 2 }}>
-                    <InputLabel>Categoría *</InputLabel>
+                  <FormControl fullWidth required sx={{ mt: 2 }}>
+                    <InputLabel>Categoría</InputLabel>
                     <Select
-                      label="Categoría *"
+                      label="Categoría"
                       value={attForm.categoryId}
                       onChange={e => setAttForm({ ...attForm, categoryId: e.target.value })}
                     >
@@ -387,7 +387,7 @@ export default function NodeList({ modelId, open, onClose }) {
                   </FormControl>
                   <TextField
                     required
-                    label="Nombre fichero *"
+                    label="Nombre fichero"
                     value={attForm.name}
                     onChange={e => setAttForm({ ...attForm, name: e.target.value })}
                     fullWidth

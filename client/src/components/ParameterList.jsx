@@ -85,12 +85,6 @@ export default function ParameterList() {
     load();
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/parameters/${id}`);
-      load();
-    }
-  };
 
   const handleReset = async (id) => {
     await axios.post(`/api/parameters/${id}/reset`);
@@ -196,6 +190,7 @@ export default function ParameterList() {
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
+
                   </TableCell>
                 </TableRow>
               ))}
@@ -226,6 +221,7 @@ export default function ParameterList() {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
+
                 </CardContent>
               </Card>
             </Grid>
@@ -235,9 +231,9 @@ export default function ParameterList() {
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>{editing ? 'Editar' : 'Nuevo'} parámetro</DialogTitle>
         <DialogContent>
-          <TextField required label="Nombre *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-          <TextField required label="Valor *" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
-          <TextField required label="Valor por defecto *" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
+          <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
+          <TextField required label="Valor" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
+          <TextField required label="Valor por defecto" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>

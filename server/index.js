@@ -93,6 +93,7 @@ const Node = sequelize.define('Node', {
   order: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: 0,
   },
   modelId: {
     type: DataTypes.INTEGER,
@@ -250,8 +251,7 @@ app.post('/api/parameters/:id/reset', async (req, res) => {
 });
 
 app.delete('/api/parameters/:id', async (req, res) => {
-  await Parameter.destroy({ where: { id: req.params.id } });
-  res.json({});
+  res.status(405).json({ error: 'Eliminar parámetros no permitido' });
 });
 
 // Document category routes

@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-export default function Header({ appName, onAdmin, onParams, onModels, onCategories }) {
+export default function Header({ appName, onAdmin, onModels }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleSettingsClick = (event) => {
@@ -30,8 +30,9 @@ export default function Header({ appName, onAdmin, onParams, onModels, onCategor
         </IconButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={() => { handleClose(); onAdmin(); }}>Gestión de modelos</MenuItem>
-          <MenuItem onClick={() => { handleClose(); onCategories(); }}>Categorías doc</MenuItem>
+          <MenuItem onClick={() => { handleClose(); onCategories(); }}>Categoría de documento</MenuItem>
           <MenuItem onClick={() => { handleClose(); onParams(); }}>Parámetros</MenuItem>
+
         </Menu>
       </Toolbar>
     </AppBar>
