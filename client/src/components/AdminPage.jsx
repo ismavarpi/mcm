@@ -15,7 +15,7 @@ export default function AdminPage() {
         <Tab label="Categorías" />
         <Tab label="Parámetros" />
       </Tabs>
-      {tab === 0 && <ModelList />}
+      {tab === 0 && <ModelList enableNodeEdit={false} />}
       {tab === 1 && <DocumentCategoryList />}
       {tab === 2 && <ParameterList />}
     </Box>

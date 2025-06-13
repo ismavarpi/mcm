@@ -30,7 +30,7 @@ function App() {
               onModels={() => { closeAll(); setShowPublicModels(true); }}
               onAdmin={() => { closeAll(); setShowAdmin(true); }} />
       <Container sx={{ mt: 2 }}>
-        {showPublicModels && <ModelList readOnly initialView="cards" />}
+        {showPublicModels && <ModelList readOnly initialView="cards" enableNodeEdit />}
         {showAdmin && <AdminPage />}
 
       </Container>
