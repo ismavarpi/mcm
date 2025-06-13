@@ -163,13 +163,17 @@ export default function NodeList({ modelId, open, onClose }) {
       alert('Solo puede haber un rol con responsabilidad A y uno con responsabilidad R');
       return;
     }
-    const payload = {
-      name: form.name,
-      parentId: form.parentId || null,
-      codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
-      tagIds: selectedTags,
-      rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
-    };
+    if (form.patternType === 'text' && !form.patternText.trim()) {
+      alert('El texto del patrón de código es obligatorio');
+      return;
+    }
+      const payload = {
+        name: form.name,
+        parentId: form.parentId || null,
+        codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
+        tagIds: selectedTags,
+        rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
+      };
     let res;
     if (editing) {
       res = await axios.put(`/api/nodes/${editing.id}`, payload);
