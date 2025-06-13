@@ -60,11 +60,12 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    npm start
    ```
    La API quedará accesible en `http://localhost:3001`.
+   Si la base de datos aún no está disponible, el servidor reintentará la conexión unas veces antes de abortar.
 2. **Iniciar el cliente**
    En otra terminal:
    ```bash
    cd client
-   npm start
+   npm run dev
    ```
   React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:3000` con recarga automática.
   

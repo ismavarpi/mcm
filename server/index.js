@@ -175,12 +175,23 @@ const Parameter = sequelize.define('Parameter', {
   }
 });
 
-sequelize.sync().then(async () => {
-  const [param] = await Parameter.findOrCreate({
-    where: { name: 'Nombre de la aplicación' },
-    defaults: { value: 'MCM', defaultValue: 'MCM' }
-  });
-});
+async function initDatabase(retries = 5, delayMs = 2000) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await sequelize.authenticate();
+      await sequelize.sync();
+      await Parameter.findOrCreate({
+        where: { name: 'Nombre de la aplicación' },
+        defaults: { value: 'MCM', defaultValue: 'MCM' }
+      });
+      return;
+    } catch (err) {
+      if (attempt >= retries) throw err;
+      console.error(`Database connection failed (attempt ${attempt}). Retrying...`);
+      await new Promise(res => setTimeout(res, delayMs));
+    }
+  }
+}
 
 // CRUD routes
 app.get('/api/models', async (req, res) => {
@@ -451,4 +462,11 @@ app.delete('/api/nodes/:id', async (req, res) => {
   res.json({});
 });
 
-app.listen(3001, () => console.log('Server running on port 3001')); 
+initDatabase()
+  .then(() => {
+    app.listen(3001, () => console.log('Server running on port 3001'));
+  })
+  .catch(err => {
+    console.error('Unable to start server:', err);
+    process.exit(1);
+  });
