@@ -24,7 +24,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    
    
    ```sql
-    mysql -h localhost -P 3309 -u root -p
+    mysql -h localhost -P 3306 -u root -p
    ```
 3. **Preparar la base de datos**
    ```sql
@@ -42,7 +42,8 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    DB_USER=mcm
    DB_PASSWORD=clave_segura
    DB_HOST=localhost
-   DB_PORT=3309
+   # Puerto por defecto de MariaDB/MySQL. Cambiar si se usa otro
+   DB_PORT=3306
    ENV
    cd ..
    ```
