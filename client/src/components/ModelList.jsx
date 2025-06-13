@@ -35,10 +35,12 @@ import LabelIcon from '@mui/icons-material/Label';
 import GroupsIcon from '@mui/icons-material/Groups';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { jsPDF } from 'jspdf';
 import TagList from './TagList';
 import TeamList from './TeamList';
 import NodeList from './NodeList';
+import DocumentCategoryList from './DocumentCategoryList';
 
 function csvExport(data) {
   const header = 'Nombre;Autor';
@@ -88,6 +90,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
   const [tagsModel, setTagsModel] = React.useState(null);
   const [teamsModel, setTeamsModel] = React.useState(null);
   const [nodesModel, setNodesModel] = React.useState(null);
+  const [categoriesModel, setCategoriesModel] = React.useState(null);
 
   const load = async () => {
     const res = await axios.get('/api/models');
@@ -133,6 +136,10 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
 
   const openTags = (model) => {
     setTagsModel(model);
+  };
+
+  const openCategories = (model) => {
+    setCategoriesModel(model);
   };
 
   const openTeams = (model) => {
@@ -231,6 +238,11 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                               <LabelIcon />
                             </IconButton>
                           </Tooltip>
+                          <Tooltip title="Categorías de documentos">
+                            <IconButton onClick={() => openCategories(model)}>
+                              <DescriptionIcon />
+                            </IconButton>
+                          </Tooltip>
                           <Tooltip title="Equipos y roles">
                             <IconButton onClick={() => openTeams(model)}>
                               <GroupsIcon />
@@ -279,6 +291,11 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           <Tooltip title="Tags">
                             <IconButton onClick={() => openTags(model)}>
                               <LabelIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Categorías de documentos">
+                            <IconButton onClick={() => openCategories(model)}>
+                              <DescriptionIcon />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Equipos y roles">
@@ -336,6 +353,9 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
       </Dialog>
       {tagsModel && (
         <TagList open={!!tagsModel} modelId={tagsModel.id} onClose={() => setTagsModel(null)} />
+      )}
+      {categoriesModel && (
+        <DocumentCategoryList open={!!categoriesModel} modelId={categoriesModel.id} onClose={() => setCategoriesModel(null)} />
       )}
       {teamsModel && (
         <TeamList open={!!teamsModel} modelId={teamsModel.id} onClose={() => setTeamsModel(null)} />

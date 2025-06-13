@@ -55,7 +55,7 @@ function pdfExport(data) {
   doc.save('categorias_documentos.pdf');
 }
 
-export default function DocumentCategoryList() {
+export default function DocumentCategoryList({ modelId, open, onClose }) {
   const [cats, setCats] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -66,17 +66,17 @@ export default function DocumentCategoryList() {
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
 
   const load = async () => {
-    const res = await axios.get('/api/categoria-documentos');
+    const res = await axios.get(`/api/models/${modelId}/categoria-documentos`);
     setCats(res.data);
   };
 
-  React.useEffect(() => { load(); }, []);
+  React.useEffect(() => { if (open) load(); }, [open]);
 
   const handleSave = async () => {
     if (editing) {
       await axios.put(`/api/categoria-documentos/${editing.id}`, form);
     } else {
-      await axios.post('/api/categoria-documentos', form);
+      await axios.post(`/api/models/${modelId}/categoria-documentos`, form);
     }
     setDialogOpen(false);
     setForm({ name: '' });
@@ -120,7 +120,9 @@ export default function DocumentCategoryList() {
   };
 
   return (
-    <div>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle>Categorías de documentos</DialogTitle>
+      <DialogContent>
         <Tooltip title={view === 'table' ? 'Vista tarjetas' : 'Vista tabla'}>
           <IconButton onClick={() => setView(view === 'table' ? 'cards' : 'table')}>
             {view === 'table' ? <ViewModuleIcon /> : <TableRowsIcon />}
@@ -220,6 +222,10 @@ export default function DocumentCategoryList() {
             <Button onClick={handleSave}>Guardar</Button>
           </DialogActions>
         </Dialog>
-    </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cerrar</Button>
+      </DialogActions>
+    </Dialog>
   );
 }

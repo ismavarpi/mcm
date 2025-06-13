@@ -90,7 +90,7 @@ export default function NodeList({ modelId, open, onClose }) {
   };
 
   const loadCategories = async () => {
-    const res = await axios.get('/api/categoria-documentos');
+    const res = await axios.get(`/api/models/${modelId}/categoria-documentos`);
     setCategories(res.data);
   };
 

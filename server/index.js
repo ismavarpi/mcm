@@ -46,6 +46,10 @@ const CategoriaDocumento = sequelize.define('CategoriaDocumento', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  modelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   }
 }, { tableName: 'categoria_documentos' });
 
@@ -67,6 +71,8 @@ const Tag = sequelize.define('Tag', {
 
 Model.hasMany(Tag, { as: 'tags', foreignKey: 'modelId' });
 Tag.belongsTo(Model, { foreignKey: 'modelId' });
+Model.hasMany(CategoriaDocumento, { as: 'documentCategories', foreignKey: 'modelId' });
+CategoriaDocumento.belongsTo(Model, { foreignKey: 'modelId' });
 
 // Team definition
 const Team = sequelize.define('Team', {
@@ -258,13 +264,13 @@ app.delete('/api/parameters/:id', async (req, res) => {
 });
 
 // Document category routes
-app.get('/api/categoria-documentos', async (req, res) => {
-  const cats = await CategoriaDocumento.findAll();
+app.get('/api/models/:modelId/categoria-documentos', async (req, res) => {
+  const cats = await CategoriaDocumento.findAll({ where: { modelId: req.params.modelId } });
   res.json(cats);
 });
 
-app.post('/api/categoria-documentos', async (req, res) => {
-  const cat = await CategoriaDocumento.create(req.body);
+app.post('/api/models/:modelId/categoria-documentos', async (req, res) => {
+  const cat = await CategoriaDocumento.create({ ...req.body, modelId: req.params.modelId });
   res.json(cat);
 });
 
@@ -425,6 +431,11 @@ app.get('/api/nodes/:nodeId/attachments', async (req, res) => {
 app.post('/api/nodes/:nodeId/attachments', upload.single('file'), async (req, res) => {
   const { categoryId, name } = req.body;
   if (!req.file) return res.status(400).json({});
+  const node = await Node.findByPk(req.params.nodeId);
+  const category = await CategoriaDocumento.findByPk(categoryId);
+  if (!node || !category || node.modelId !== category.modelId) {
+    return res.status(400).json({ error: 'Categoría no válida' });
+  }
   const filename = Date.now() + '-' + req.file.originalname;
   const dest = path.join('uploads', filename);
   fs.renameSync(req.file.path, path.join(__dirname, dest));
