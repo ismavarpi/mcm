@@ -479,6 +479,7 @@ app.post('/api/models/:modelId/nodes', async (req, res) => {
     : [];
   const finalTags = Array.from(new Set([...tagIds, ...parentTags]));
   if (codePattern !== 'ORDER') {
+    if (!codePattern.trim()) return res.status(400).json({ error: 'Código requerido' });
     const conflict = await Node.findOne({ where: { parentId: data.parentId || null, codePattern } });
     if (conflict) return res.status(400).json({ error: 'Código duplicado' });
   }
@@ -501,11 +502,16 @@ app.put('/api/nodes/:id', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
   const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
   if (codePattern !== 'ORDER') {
+    if (!codePattern.trim()) return res.status(400).json({ error: 'Código requerido' });
     const conflict = await Node.findOne({ where: { parentId: data.parentId ?? node.parentId, codePattern, id: { [Op.ne]: node.id } } });
     if (conflict) return res.status(400).json({ error: 'Código duplicado' });
   }
+  const previousPattern = node.codePattern;
   await node.update({ ...data, codePattern });
   await updateNodeAndDescendants(node);
+  if (previousPattern === 'ORDER' && codePattern !== 'ORDER') {
+    await recalculateSiblingOrders(node.parentId);
+  }
   const oldTagIds = node.tags.map(t => t.id);
   const parentTags = node.parentId
     ? (await Node.findByPk(node.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)
