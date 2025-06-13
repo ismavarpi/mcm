@@ -41,6 +41,7 @@ import TagList from './TagList';
 import TeamList from './TeamList';
 import NodeList from './NodeList';
 import DocumentCategoryList from './DocumentCategoryList';
+import useProcessingAction from '../hooks/useProcessingAction';
 
 function csvExport(data) {
   const header = 'Nombre;Autor';
@@ -99,7 +100,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
 
   React.useEffect(() => { load(); }, []);
 
-  const handleSave = async () => {
+  const [saveModel, saving] = useProcessingAction(async () => {
     if (editing && parseInt(form.parentId) === editing.id) {
       alert('Un modelo no puede ser su propio padre');
       return;
@@ -113,12 +114,16 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
     setForm({ name: '', author: '', parentId: '' });
     setEditing(null);
     load();
-  };
+  });
 
-  const handleDelete = async (id) => {
+  const [removeModel, removing] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/models/${id}`);
+    load();
+  });
+
+  const handleDelete = (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/models/${id}`);
-      load();
+      removeModel(id);
     }
   };
 
@@ -259,7 +264,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                       )}
                       {!readOnly && (
                         <Tooltip title="Eliminar">
-                          <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                          <IconButton color="error" onClick={() => handleDelete(model.id)} disabled={removing}>
                             <DeleteIcon />
                           </IconButton>
                         </Tooltip>
@@ -314,7 +319,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                       )}
                       {!readOnly && (
                         <Tooltip title="Eliminar">
-                          <IconButton color="error" onClick={() => handleDelete(model.id)}>
+                          <IconButton color="error" onClick={() => handleDelete(model.id)} disabled={removing}>
                             <DeleteIcon />
                           </IconButton>
                         </Tooltip>
@@ -347,8 +352,8 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSave}>Guardar</Button>
+          <Button onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
+          <Button onClick={saveModel} disabled={saving}>Guardar</Button>
         </DialogActions>
       </Dialog>
       {tagsModel && (

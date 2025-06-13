@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import useProcessingAction from '../hooks/useProcessingAction';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -72,7 +73,7 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
 
   React.useEffect(() => { if (open) load(); }, [open]);
 
-  const handleSave = async () => {
+  const [save, saving] = useProcessingAction(async () => {
     if (!form.name.trim()) {
       alert('El nombre es obligatorio');
       return;
@@ -86,12 +87,16 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
     setForm({ name: '' });
     setEditing(null);
     load();
-  };
+  });
 
-  const handleDelete = async (id) => {
+  const [remove, removing] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/categoria-documentos/${id}`);
+    load();
+  });
+
+  const handleDelete = (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/categoria-documentos/${id}`);
-      load();
+      remove(id);
     }
   };
 
@@ -183,7 +188,7 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(cat.id)}>
+                        <IconButton color="error" onClick={() => handleDelete(cat.id)} disabled={removing}>
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
@@ -206,7 +211,7 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => handleDelete(cat.id)}>
+                      <IconButton color="error" onClick={() => handleDelete(cat.id)} disabled={removing}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -222,8 +227,8 @@ export default function DocumentCategoryList({ modelId, open, onClose }) {
             <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ name: e.target.value })} fullWidth />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Guardar</Button>
+            <Button onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={save} disabled={saving}>Guardar</Button>
           </DialogActions>
         </Dialog>
       </DialogContent>

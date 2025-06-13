@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import useProcessingAction from '../hooks/useProcessingAction';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -72,7 +73,7 @@ export default function TagList({ modelId, open, onClose }) {
 
   React.useEffect(() => { if (open) load(); }, [open]);
 
-  const handleSave = async () => {
+  const [save, saving] = useProcessingAction(async () => {
     if (editing) {
       await axios.put(`/api/tags/${editing.id}`, form);
     } else {
@@ -82,12 +83,16 @@ export default function TagList({ modelId, open, onClose }) {
     setForm({ name: '', bgColor: '#ffffff', textColor: '#000000' });
     setEditing(null);
     load();
-  };
+  });
 
-  const handleDelete = async (id) => {
+  const [remove, removing] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/tags/${id}`);
+    load();
+  });
+
+  const handleDelete = (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
-      await axios.delete(`/api/tags/${id}`);
-      load();
+      remove(id);
     }
   };
 
@@ -186,7 +191,7 @@ export default function TagList({ modelId, open, onClose }) {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(tag.id)}>
+                        <IconButton color="error" onClick={() => handleDelete(tag.id)} disabled={removing}>
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
@@ -212,7 +217,7 @@ export default function TagList({ modelId, open, onClose }) {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => handleDelete(tag.id)}>
+                      <IconButton color="error" onClick={() => handleDelete(tag.id)} disabled={removing}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -230,8 +235,8 @@ export default function TagList({ modelId, open, onClose }) {
             <TextField required label="Color texto" type="color" value={form.textColor} onChange={(e) => setForm({ ...form, textColor: e.target.value })} fullWidth sx={{ mt: 2 }} />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Guardar</Button>
+            <Button onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={save} disabled={saving}>Guardar</Button>
           </DialogActions>
         </Dialog>
       </DialogContent>
