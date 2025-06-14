@@ -499,15 +499,17 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Eliminar">
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleDelete(n.id)}
-                    disabled={(n.name === 'Raiz' && n.parentId === null) || removing}
-                    sx={{ ml: 0.5 }}
-                  >
-                    <DeleteIcon fontSize="inherit" />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(n.id)}
+                      disabled={(n.name === 'Raiz' && n.parentId === null) || removing}
+                      sx={{ ml: 0.5 }}
+                    >
+                      <DeleteIcon fontSize="inherit" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
               </div>
 
@@ -616,11 +618,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           }}
           selectedItems={selected}
           onSelectedItemsChange={(e, ids) => {
-            setSelected(ids);
-            const id = parseInt(ids[0], 10);
+            const idStr = Array.isArray(ids) ? ids[0] : ids;
+            setSelected(idStr);
+            const id = parseInt(idStr, 10);
             const node = nodes.find(n => n.id === id);
             setViewNode(node || null);
           }}
+          expansionTrigger="iconContainer"
         >
           {renderTree(null)}
         </TreeView>
@@ -903,11 +907,18 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                           </TableCell>
                           <TableCell>
                             <Tooltip title="Eliminar archivo">
-                              <IconButton color="error" size="small" onClick={() => {
-                                if (window.confirm('¿Eliminar archivo?')) removeAttachment(att.id);
-                              }} disabled={removingAttachment}>
-                                <DeleteIcon fontSize="inherit" />
-                              </IconButton>
+                              <span>
+                                <IconButton
+                                  color="error"
+                                  size="small"
+                                  onClick={() => {
+                                    if (window.confirm('¿Eliminar archivo?')) removeAttachment(att.id);
+                                  }}
+                                  disabled={removingAttachment}
+                                >
+                                  <DeleteIcon fontSize="inherit" />
+                                </IconButton>
+                              </span>
                             </Tooltip>
                           </TableCell>
                         </TableRow>
