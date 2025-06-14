@@ -362,13 +362,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     } else {
       res = await axios.post(`/api/models/${modelId}/nodes`, payload);
     }
-    setFocusNodeId(res.data.id);
     setDialogOpen(false);
     setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
-    load();
+    await load();
+    setFocusNodeId(res.data.id);
   });
 
   const [removeNode, removing] = useProcessingAction(async (id) => {
@@ -384,8 +384,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const [moveNode, moving] = useProcessingAction(async (id, direction) => {
     await axios.post(`/api/nodes/${id}/move`, { direction });
+    await load();
     setFocusNodeId(id);
-    load();
   });
 
   const openEdit = async (node) => {
