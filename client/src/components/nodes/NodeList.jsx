@@ -33,6 +33,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { SimpleTreeView as TreeView } from '@mui/x-tree-view';
 import { TreeItem } from '@mui/x-tree-view';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -108,6 +109,17 @@ function pdfExport(data) {
   doc.save('nodos.pdf');
 }
 
+async function pdfExportNode(element, node) {
+  if (!element || !node) return;
+  const canvas = await html2canvas(element);
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'pt', 'a4');
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  pdf.save(`${node.code}_${node.name}.pdf`);
+}
+
 export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -126,6 +138,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [viewNode, setViewNode] = React.useState(null);
   const [viewAttachments, setViewAttachments] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
+  const handleExportNodePdf = () => {
+    const el = document.getElementById('node-details-content');
+    if (el && viewNode) {
+      pdfExportNode(el, viewNode);
+    }
+  };
   const [addAttachment, addingAttachment] = useProcessingAction(async () => {
     if (!attForm.file) return;
     const fd = new FormData();
@@ -630,7 +648,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         </TreeView>
         </div>
         <div style={{ flex: 1, padding: '1rem', overflowY: 'auto' }}>
-          <NodeDetails node={viewNode} attachments={viewAttachments} />
+          <NodeDetails
+            node={viewNode}
+            attachments={viewAttachments}
+            onEdit={viewNode ? () => openEdit(viewNode) : null}
+            onDelete={viewNode ? () => handleDelete(viewNode.id) : null}
+            onExport={handleExportNodePdf}
+          />
         </div>
       </div>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
