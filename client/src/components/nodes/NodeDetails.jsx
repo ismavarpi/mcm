@@ -4,12 +4,13 @@ import Tooltip from '@mui/material/Tooltip';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { jsPDF } from 'jspdf';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick }) {
+export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -42,9 +43,9 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h2 style={{ margin: 0 }}>[{node.code}] {node.name}</h2>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           {onEdit && (
             <Tooltip title="Editar nodo">
               <IconButton size="small" onClick={() => onEdit(node)}>
@@ -64,6 +65,13 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
               <PictureAsPdfIcon fontSize="inherit" />
             </IconButton>
           </Tooltip>
+          {onClose && (
+            <Tooltip title="Ocultar detalles">
+              <IconButton size="small" onClick={onClose} sx={{ ml: 0.5 }}>
+                <ChevronRightIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          )}
         </div>
       </div>
       <div ref={contentRef}>
@@ -126,7 +134,7 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
           <ul>
             {attachments.map(att => (
               <li key={att.id}>
-                <a href={`/api/attachments/${att.id}/download`}>{att.name}</a>{' '}
+                <a href={`/api/nodes/attachments/${att.id}/download`}>{att.name}</a>{' '}
                 (<span>{att.CategoriaDocumento.name}</span>)
               </li>
             ))}
