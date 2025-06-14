@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import useProcessingAction from '../hooks/useProcessingAction';
+import useProcessingAction from '../../hooks/useProcessingAction';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
