@@ -18,9 +18,14 @@ function validateRasciLines(rasci) {
   if (!rasci || !rasci.length) return;
   let countA = 0;
   let countR = 0;
+  const usedRoles = new Set();
   for (const line of rasci) {
     if (line.responsibilities.includes('A')) countA++;
     if (line.responsibilities.includes('R')) countR++;
+    if (usedRoles.has(line.roleId)) {
+      throw new Error('Un rol sólo puede aparecer una vez en el RASCI del nodo');
+    }
+    usedRoles.add(line.roleId);
   }
   if (countA === 0 || countR === 0) {
     throw new Error('Debe existir al menos un rol con responsabilidad A y otro con responsabilidad R');
