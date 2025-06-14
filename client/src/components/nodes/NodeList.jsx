@@ -47,9 +47,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Editor as DraftEditor, EditorState, convertToRaw, ContentState } from 'draft-js';
+import { Editor as DraftEditor, EditorState, convertToRaw, ContentState, RichUtils } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -142,6 +147,22 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [editingRasciIdx, setEditingRasciIdx] = React.useState(null);
   const [rasciForm, setRasciForm] = React.useState({ teamId: '', roleId: '', responsibilities: [] });
   const [editorState, setEditorState] = React.useState(() => EditorState.createEmpty());
+  const handleKeyCommand = (command, state) => {
+    const newState = RichUtils.handleKeyCommand(state, command);
+    if (newState) {
+      setEditorState(newState);
+      return 'handled';
+    }
+    return 'not-handled';
+  };
+
+  const toggleInlineStyle = style => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, style));
+  };
+
+  const toggleBlockType = type => {
+    setEditorState(RichUtils.toggleBlockType(editorState, type));
+  };
 
   React.useEffect(() => {
     if (dialogOpen) {
@@ -582,7 +603,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         </TreeView>
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ minHeight: 600 }}>
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label="Datos del nodo" />
               <Tab label="Descripción" />
@@ -697,6 +718,33 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </div>) }
             {tab === 1 && (
             <div style={{ marginTop: '1rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <Tooltip title="Negrita">
+                  <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleInlineStyle('BOLD'); }}>
+                    <FormatBoldIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Cursiva">
+                  <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleInlineStyle('ITALIC'); }}>
+                    <FormatItalicIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Subrayado">
+                  <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleInlineStyle('UNDERLINE'); }}>
+                    <FormatUnderlinedIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Lista">
+                  <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleBlockType('unordered-list-item'); }}>
+                    <FormatListBulletedIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Lista numerada">
+                  <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleBlockType('ordered-list-item'); }}>
+                    <FormatListNumberedIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </div>
               <div style={{ border: '1px solid #ccc', minHeight: 200, padding: '0.5rem' }}>
                 <DraftEditor
                   editorState={editorState}
@@ -704,6 +752,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                     setEditorState(state);
                     setForm({ ...form, description: draftToHtml(convertToRaw(state.getCurrentContent())) });
                   }}
+                  handleKeyCommand={handleKeyCommand}
                 />
               </div>
             </div>
