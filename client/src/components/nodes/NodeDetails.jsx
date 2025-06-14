@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete }) {
+export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -72,12 +72,14 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete }) {
           {node.tags.map(tag => (
             <span
               key={tag.id}
+              onClick={onTagClick ? () => onTagClick(tag.id) : undefined}
               style={{
                 backgroundColor: tag.bgColor,
                 color: tag.textColor,
                 padding: '0 0.25rem',
                 marginRight: '0.25rem',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                cursor: onTagClick ? 'pointer' : 'default'
               }}
             >
               {tag.name}

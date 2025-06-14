@@ -672,6 +672,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               attachments={viewAttachments}
               onEdit={openEdit}
               onDelete={handleDelete}
+              onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
             />
           </div>
         ) : (
