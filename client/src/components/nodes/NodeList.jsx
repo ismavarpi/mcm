@@ -603,7 +603,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         </TreeView>
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
-          <DialogContent sx={{ minHeight: 600 }}>
+          <DialogContent sx={{ minHeight: 600, display: 'flex', flexDirection: 'column' }}>
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label="Datos del nodo" />
               <Tab label="Descripción" />
@@ -717,7 +717,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </FormControl>
             </div>) }
             {tab === 1 && (
-            <div style={{ marginTop: '1rem' }}>
+            <div style={{ marginTop: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ marginBottom: '0.5rem' }}>
                 <Tooltip title="Negrita">
                   <IconButton size="small" onMouseDown={e => { e.preventDefault(); toggleInlineStyle('BOLD'); }}>
@@ -745,7 +745,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                   </IconButton>
                 </Tooltip>
               </div>
-              <div style={{ border: '1px solid #ccc', minHeight: 200, padding: '0.5rem' }}>
+              <div style={{ border: '1px solid #ccc', flex: 1, padding: '0.5rem', overflow: 'auto' }}>
                 <DraftEditor
                   editorState={editorState}
                   onChange={state => {
