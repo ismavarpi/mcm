@@ -139,7 +139,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     loadAttachments(editing.id);
   });
   const [removeAttachment, removingAttachment] = useProcessingAction(async (id) => {
-    await axios.delete(`/api/attachments/${id}`);
+    await axios.delete(`/api/nodes/attachments/${id}`);
     loadAttachments(editing.id);
   });
   const [expanded, setExpanded] = React.useState([]);
@@ -663,16 +663,14 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           </div>
         )}
         {detailsOpen ? (
-          <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto', position: 'relative' }}>
-            <IconButton size="small" onClick={() => setDetailsOpen(false)} style={{ position: 'absolute', top: 0, right: 0 }}>
-              <ChevronRightIcon />
-            </IconButton>
+          <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto' }}>
             <NodeDetails
               node={viewNode}
               attachments={viewAttachments}
               onEdit={openEdit}
               onDelete={handleDelete}
               onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
+              onClose={() => setDetailsOpen(false)}
             />
           </div>
         ) : (
@@ -970,7 +968,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                         <TableRow key={att.id}>
                           <TableCell>{att.CategoriaDocumento.name}</TableCell>
                           <TableCell>
-                            <a href={`/api/attachments/${att.id}/download`}>{att.name}</a>
+                            <a href={`/api/nodes/attachments/${att.id}/download`}>{att.name}</a>
                           </TableCell>
                           <TableCell>
                             <Tooltip title="Eliminar archivo">
