@@ -232,29 +232,27 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                   {(!readOnly || enableNodeEdit) && (
                     <TableCell>
                       {!readOnly && (
-                        <>
-                          <Tooltip title="Editar">
-                            <IconButton onClick={() => openEdit(model)}>
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Tags">
-                            <IconButton onClick={() => openTags(model)}>
-                              <LabelIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Categorías de documentos">
-                            <IconButton onClick={() => openCategories(model)}>
-                              <DescriptionIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Equipos y roles">
-                            <IconButton onClick={() => openTeams(model)}>
-                              <GroupsIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
+                        <Tooltip title="Editar">
+                          <IconButton onClick={() => openEdit(model)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
+                      <Tooltip title="Tags">
+                        <IconButton onClick={() => openTags(model)}>
+                          <LabelIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Categorías de documentos">
+                        <IconButton onClick={() => openCategories(model)}>
+                          <DescriptionIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Equipos y roles">
+                        <IconButton onClick={() => openTeams(model)}>
+                          <GroupsIcon />
+                        </IconButton>
+                      </Tooltip>
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -287,29 +285,27 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                   {(!readOnly || enableNodeEdit) && (
                     <>
                       {!readOnly && (
-                        <>
-                          <Tooltip title="Editar">
-                            <IconButton onClick={() => openEdit(model)}>
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Tags">
-                            <IconButton onClick={() => openTags(model)}>
-                              <LabelIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Categorías de documentos">
-                            <IconButton onClick={() => openCategories(model)}>
-                              <DescriptionIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Equipos y roles">
-                            <IconButton onClick={() => openTeams(model)}>
-                              <GroupsIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
+                        <Tooltip title="Editar">
+                          <IconButton onClick={() => openEdit(model)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
+                      <Tooltip title="Tags">
+                        <IconButton onClick={() => openTags(model)}>
+                          <LabelIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Categorías de documentos">
+                        <IconButton onClick={() => openCategories(model)}>
+                          <DescriptionIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Equipos y roles">
+                        <IconButton onClick={() => openTeams(model)}>
+                          <GroupsIcon />
+                        </IconButton>
+                      </Tooltip>
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
