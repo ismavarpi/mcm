@@ -124,7 +124,7 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete }) {
           <ul>
             {attachments.map(att => (
               <li key={att.id}>
-                <a href={`/${att.filePath}`} download>{att.name}</a>{' '}
+                <a href={`/api/attachments/${att.id}/download`}>{att.name}</a>{' '}
                 (<span>{att.CategoriaDocumento.name}</span>)
               </li>
             ))}
