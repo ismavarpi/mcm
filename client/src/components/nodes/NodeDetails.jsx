@@ -1,9 +1,28 @@
 import React from 'react';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 
 export default function NodeDetails({ node, attachments }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
+
+  const rasciByTeam = React.useMemo(() => {
+    if (!node.rascis) return [];
+    const map = {};
+    node.rascis.forEach(r => {
+      const team = r.Role.Team;
+      if (!map[team.id]) map[team.id] = { team, lines: [] };
+      map[team.id].lines.push(r);
+    });
+    const arr = Object.values(map);
+    arr.sort((a, b) => a.team.order - b.team.order);
+    arr.forEach(group => {
+      group.lines.sort((a, b) => a.Role.order - b.Role.order);
+    });
+    return arr;
+  }, [node.rascis]);
 
   return (
     <div>
@@ -27,27 +46,36 @@ export default function NodeDetails({ node, attachments }) {
         </div>
       )}
       <div dangerouslySetInnerHTML={{ __html: node.description }} />
-      {node.rascis && node.rascis.length > 0 && (
+      {rasciByTeam.length > 0 && (
         <div style={{ marginTop: '1rem' }}>
           <h3>RASCI</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left' }}>Equipo</th>
-                <th style={{ textAlign: 'left' }}>Rol</th>
-                <th style={{ textAlign: 'left' }}>Responsabilidades</th>
-              </tr>
-            </thead>
-            <tbody>
-              {node.rascis.map(r => (
-                <tr key={r.id}>
-                  <td>{r.Role.Team.name}</td>
-                  <td>{r.Role.name}</td>
-                  <td>{r.responsibilities}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {rasciByTeam.map(group => (
+            <Card key={group.team.id} sx={{ mt: 2 }}>
+              <CardContent>
+                <Typography variant="h6">{group.team.order} - {group.team.name}</Typography>
+                {group.lines.map(line => (
+                  <div key={line.id} style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <span style={{ flex: 1 }}>{line.Role.name}</span>
+                    {['R','A','S','C','I'].map(ch => (
+                      <span
+                        key={ch}
+                        style={{
+                          marginRight: '0.25rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: line.responsibilities.includes(ch) ? '#c8e6c9' : 'transparent',
+                          color: line.responsibilities.includes(ch) ? 'black' : '#ccc',
+                          borderRadius: 4,
+                          border: line.responsibilities.includes(ch) ? '1px solid #a5d6a7' : '1px solid transparent'
+                        }}
+                      >
+                        {ch}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
       {attachments && attachments.length > 0 && (
