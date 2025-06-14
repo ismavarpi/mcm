@@ -37,6 +37,13 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Autocomplete from '@mui/material/Autocomplete';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -105,6 +112,20 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [categories, setCategories] = React.useState([]);
   const [attachments, setAttachments] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
+  const [addAttachment, addingAttachment] = useProcessingAction(async () => {
+    if (!attForm.file) return;
+    const fd = new FormData();
+    fd.append('file', attForm.file);
+    fd.append('name', attForm.name);
+    fd.append('categoryId', attForm.categoryId);
+    await axios.post(`/api/nodes/${editing.id}/attachments`, fd);
+    setAttForm({ categoryId: '', name: '', file: null });
+    loadAttachments(editing.id);
+  });
+  const [removeAttachment, removingAttachment] = useProcessingAction(async (id) => {
+    await axios.delete(`/api/attachments/${id}`);
+    loadAttachments(editing.id);
+  });
   const [expanded, setExpanded] = React.useState([]);
   const [selected, setSelected] = React.useState('');
   const [focusNodeId, setFocusNodeId] = React.useState(null);
@@ -661,61 +682,69 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             {tab === 2 && editing && (
             <>
               <div style={{ marginTop: '1rem' }}>
-                  <FormControl fullWidth required sx={{ mt: 2 }}>
-                    <InputLabel>Categoría de documentos</InputLabel>
-                    <Select
-                      label="Categoría de documentos"
-                      value={attForm.categoryId}
-                      onChange={e => setAttForm({ ...attForm, categoryId: e.target.value })}
-                    >
-                      {categories.map(c => (
-                        <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableRow>
+                        <TableCell style={{ fontWeight: 'bold' }}>Categoría</TableCell>
+                        <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                        <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {attachments.map(att => (
+                        <TableRow key={att.id}>
+                          <TableCell>{att.CategoriaDocumento.name}</TableCell>
+                          <TableCell>
+                            <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip title="Eliminar archivo">
+                              <IconButton color="error" size="small" onClick={() => {
+                                if (window.confirm('¿Eliminar archivo?')) removeAttachment(att.id);
+                              }} disabled={removingAttachment}>
+                                <DeleteIcon fontSize="inherit" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </Select>
-                  </FormControl>
-                  <TextField
-                    required
-                    label="Nombre fichero"
-                    value={attForm.name}
-                    onChange={e => setAttForm({ ...attForm, name: e.target.value })}
-                    fullWidth
-                    sx={{ mt: 2 }}
-                  />
-                  <input
-                    type="file"
-                    onChange={e => setAttForm({ ...attForm, file: e.target.files[0] })}
-                    style={{ marginTop: '1rem' }}
-                  />
-                  <Button
-                    onClick={async () => {
-                      if (!attForm.file) return;
-                      const fd = new FormData();
-                      fd.append('file', attForm.file);
-                      fd.append('name', attForm.name);
-                      fd.append('categoryId', attForm.categoryId);
-                      await axios.post(`/api/nodes/${editing.id}/attachments`, fd);
-                      setAttForm({ categoryId: '', name: '', file: null });
-                      loadAttachments(editing.id);
-                    }}
-                    sx={{ mt: 1 }}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+              <div style={{ marginTop: '1rem', border: '1px solid #ccc', padding: '1rem', borderRadius: '4px' }}>
+                <FormControl fullWidth required sx={{ mt: 2 }}>
+                  <InputLabel>Categoría de documentos</InputLabel>
+                  <Select
+                    label="Categoría de documentos"
+                    value={attForm.categoryId}
+                    onChange={e => setAttForm({ ...attForm, categoryId: e.target.value })}
                   >
-                    Subir
-                  </Button>
-                </div>
-                <div style={{ marginTop: '1rem' }}>
-                  {attachments.map(att => (
-                    <div key={att.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <Chip label={att.CategoriaDocumento.name} sx={{ mr: 1 }} />
-                      <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
-                      <Tooltip title="Eliminar archivo">
-                        <IconButton color="error" size="small" sx={{ ml: 1 }} onClick={async () => { if (window.confirm('¿Eliminar archivo?')) { await axios.delete(`/api/attachments/${att.id}`); loadAttachments(editing.id); } }}>
-                          <DeleteIcon fontSize="inherit" />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                  ))}
-                </div>
-              </>
+                    {categories.map(c => (
+                      <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  required
+                  label="Nombre fichero"
+                  value={attForm.name}
+                  onChange={e => setAttForm({ ...attForm, name: e.target.value })}
+                  fullWidth
+                  sx={{ mt: 2 }}
+                />
+                <input
+                  type="file"
+                  required
+                  onChange={e => setAttForm({ ...attForm, file: e.target.files[0] })}
+                  style={{ marginTop: '1rem' }}
+                />
+                <Button onClick={addAttachment} disabled={addingAttachment} sx={{ mt: 1 }}>
+                  Añadir
+                </Button>
+              </div>
+            </>
             )}
           </DialogContent>
           <DialogActions>
