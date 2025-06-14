@@ -21,6 +21,8 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import AddIcon from '@mui/icons-material/Add';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import TableRowsIcon from '@mui/icons-material/TableRows';
@@ -185,8 +187,12 @@ export default function TeamList({ modelId, open, onClose }) {
             <Table>
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableRow>
-                  <TableCell onClick={() => toggleSort('order')} style={{ fontWeight: 'bold' }}>Orden</TableCell>
-                  <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                  <TableCell onClick={() => toggleSort('order')} style={{ fontWeight: 'bold', cursor: 'pointer' }}>
+                    Orden {sort.key === 'order' && (sort.dir === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
+                  </TableCell>
+                  <TableCell onClick={() => toggleSort('name')} style={{ fontWeight: 'bold', cursor: 'pointer' }}>
+                    Nombre {sort.key === 'name' && (sort.dir === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
+                  </TableCell>
                   <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
