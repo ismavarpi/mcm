@@ -3,7 +3,7 @@ import React from 'react';
 // Cabecera de la aplicación
 import Header from './components/Header';
 // Componente que muestra los modelos
-import ModelList from './components/ModelList';
+import ModelList from './components/models/ModelList';
 // Página de administración
 import AdminPage from './components/AdminPage';
 // Cliente HTTP para peticiones a la API

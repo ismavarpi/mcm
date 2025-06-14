@@ -39,11 +39,11 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { jsPDF } from 'jspdf';
-import TagList from './TagList';
-import TeamList from './TeamList';
-import NodeList from './NodeList';
-import DocumentCategoryList from './DocumentCategoryList';
-import useProcessingAction from '../hooks/useProcessingAction';
+import TagList from '../tags/TagList';
+import TeamList from '../teams/TeamList';
+import NodeList from '../nodes/NodeList';
+import DocumentCategoryList from '../documentCategories/DocumentCategoryList';
+import useProcessingAction from '../../hooks/useProcessingAction';
 
 function csvExport(data) {
   const header = 'Nombre;Autor';

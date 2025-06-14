@@ -2,8 +2,8 @@ import React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import ModelList from './ModelList';
-import ParameterList from './ParameterList';
+import ModelList from './models/ModelList';
+import ParameterList from './parameters/ParameterList';
 
 export default function AdminPage() {
   const [tab, setTab] = React.useState(0);
