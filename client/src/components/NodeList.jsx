@@ -34,6 +34,8 @@ import { SimpleTreeView as TreeView } from '@mui/x-tree-view';
 import { TreeItem } from '@mui/x-tree-view';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -107,6 +109,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [focusNodeId, setFocusNodeId] = React.useState(null);
   const [allExpanded, setAllExpanded] = React.useState(false);
   const [inheritedTags, setInheritedTags] = React.useState([]);
+  const [tab, setTab] = React.useState(0);
 
   const load = async () => {
     const [nodesRes, tagsRes, teamsRes] = await Promise.all([
@@ -124,6 +127,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setTeams(teamsRes.data);
     setRoles(rolesMap);
     setNodes(nodesRes.data);
+    setExpanded(nodesRes.data.map(n => String(n.id)));
     setTags(tagsRes.data);
   };
 
@@ -233,6 +237,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     });
     setRasciLines(sorted.map(r=>({id:r.id, teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')})));
     loadAttachments(node.id);
+    setTab(0);
     setDialogOpen(true);
   };
 
@@ -246,6 +251,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setRasciLines([]);
     setAttachments([]);
     setAttForm({ categoryId: '', name: '', file: null });
+    setTab(0);
     setDialogOpen(true);
   };
 
@@ -364,9 +370,14 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   return (
     <div style={{ position: 'fixed', top: '64px', left: 0, width: '100%', height: 'calc(100% - 64px)', backgroundColor: '#fff', overflow: 'auto', zIndex: 1300 }}>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #ccc' }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={onClose}>Volver a modelos</Button>
-        <h2 style={{ marginLeft: '1rem' }}>Nodos del modelo {modelName}</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid #ccc' }}>
+        <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={onClose}>
+          Volver a modelos
+        </Button>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Nodos del modelo</div>
+          <div style={{ fontSize: '1rem', color: '#666' }}>{modelName}</div>
+        </div>
       </div>
       <div style={{ padding: '1rem' }}>
         <Tooltip title="Nuevo nodo raíz">
@@ -454,9 +465,16 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         >
           {renderTree(null)}
         </TreeView>
-        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
           <DialogContent>
+            <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
+              <Tab label="Datos del nodo" />
+              <Tab label="RASCI" />
+              <Tab label="Adjuntos" />
+            </Tabs>
+            {tab === 0 && (
+            <div>
             <FormControl fullWidth>
               <InputLabel>Nodo padre</InputLabel>
               <Select
@@ -549,6 +567,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            </div>) }
+            {tab === 1 && (
+            <div>
             {rasciLines.map((line, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
                 <FormControl sx={{ mr: 1, minWidth: 120 }}>
@@ -610,9 +631,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               </div>
             ))}
             <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
-            {editing && (
-              <>
-                <div style={{ marginTop: '1rem' }}>
+            </div>)}
+            {tab === 2 && editing && (
+            <>
+              <div style={{ marginTop: '1rem' }}>
                   <FormControl fullWidth required sx={{ mt: 2 }}>
                     <InputLabel>Categoría de documentos</InputLabel>
                     <Select
