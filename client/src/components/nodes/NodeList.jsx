@@ -55,6 +55,7 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import NodeDetails from './NodeDetails';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -122,6 +123,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [rasciLines, setRasciLines] = React.useState([]);
   const [categories, setCategories] = React.useState([]);
   const [attachments, setAttachments] = React.useState([]);
+  const [viewNode, setViewNode] = React.useState(null);
+  const [viewAttachments, setViewAttachments] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
   const [addAttachment, addingAttachment] = useProcessingAction(async () => {
     if (!attForm.file) return;
@@ -276,6 +279,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       }
       setExpanded(prev => Array.from(new Set([...prev, ...path])));
       setSelected(String(focusNodeId));
+      setViewNode(map[focusNodeId]);
       setFocusNodeId(null);
     }
   }, [focusNodeId, nodes]);
@@ -289,6 +293,19 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     const res = await axios.get(`/api/nodes/${id}/attachments`);
     setAttachments(res.data);
   };
+
+  const loadViewAttachments = async (id) => {
+    const res = await axios.get(`/api/nodes/${id}/attachments`);
+    setViewAttachments(res.data);
+  };
+
+  React.useEffect(() => {
+    if (viewNode) {
+      loadViewAttachments(viewNode.id);
+    } else {
+      setViewAttachments([]);
+    }
+  }, [viewNode]);
 
   React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
 
@@ -505,7 +522,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', top: '64px', left: 0, width: '100%', height: 'calc(100% - 64px)', backgroundColor: '#fff', overflow: 'auto', zIndex: 1300 }}>
+    <div style={{ position: 'fixed', top: '64px', left: 0, width: '100%', height: 'calc(100% - 64px)', backgroundColor: '#fff', zIndex: 1300, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid #ccc' }}>
         <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={onClose}>
           Volver a modelos
@@ -515,12 +532,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           <div style={{ fontSize: '1rem', color: '#666' }}>{modelName}</div>
         </div>
       </div>
-      <div style={{ padding: '1rem' }}>
-        <Tooltip title="Nuevo nodo raíz">
-          <IconButton onClick={() => openCreate('')}>
-            <AddIcon />
-          </IconButton>
-        </Tooltip>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ width: '40%', minWidth: 300, padding: '1rem', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
+          <Tooltip title="Nuevo nodo raíz">
+            <IconButton onClick={() => openCreate('')}>
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
         <Tooltip title="Exportar CSV">
           <IconButton onClick={() => csvExport(nodes)}>
             <FileDownloadIcon />
@@ -597,11 +615,21 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             setAllExpanded(ids.length === nodes.length);
           }}
           selectedItems={selected}
-          onSelectedItemsChange={(e, ids) => setSelected(ids)}
+          onSelectedItemsChange={(e, ids) => {
+            setSelected(ids);
+            const id = parseInt(ids[0], 10);
+            const node = nodes.find(n => n.id === id);
+            setViewNode(node || null);
+          }}
         >
           {renderTree(null)}
         </TreeView>
-        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
+        </div>
+        <div style={{ flex: 1, padding: '1rem', overflowY: 'auto' }}>
+          <NodeDetails node={viewNode} attachments={viewAttachments} />
+        </div>
+      </div>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
           <DialogContent sx={{ minHeight: 600, display: 'flex', flexDirection: 'column' }}>
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
@@ -927,7 +955,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <Button onClick={saveNode} disabled={saving}>Guardar</Button>
           </DialogActions>
         </Dialog>
-      </div>
     </div>
   );
 }
