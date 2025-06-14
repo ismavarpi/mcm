@@ -19,7 +19,8 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
-  await Parameter.update(req.body, { where: { id: req.params.id } });
+  const { name, value } = req.body;
+  await Parameter.update({ name, value }, { where: { id: req.params.id } });
   const param = await Parameter.findByPk(req.params.id);
   res.json(param);
 });

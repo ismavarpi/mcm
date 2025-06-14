@@ -75,7 +75,10 @@ export default function ParameterList() {
 
   const [save, saving] = useProcessingAction(async () => {
     if (editing) {
-      await axios.put(`/api/parameters/${editing.id}`, form);
+      await axios.put(`/api/parameters/${editing.id}`, {
+        name: form.name,
+        value: form.value,
+      });
     } else {
       await axios.post('/api/parameters', form);
     }
@@ -220,9 +223,28 @@ export default function ParameterList() {
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>{editing ? 'Editar' : 'Nuevo'} parámetro</DialogTitle>
         <DialogContent>
-          <TextField required label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} fullWidth />
-          <TextField required label="Valor" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} fullWidth />
-          <TextField required label="Valor por defecto" value={form.defaultValue} onChange={(e) => setForm({ ...form, defaultValue: e.target.value })} fullWidth />
+          <TextField
+            required
+            label="Nombre"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            required
+            label="Valor"
+            value={form.value}
+            onChange={(e) => setForm({ ...form, value: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            required
+            label="Valor por defecto"
+            value={form.defaultValue}
+            onChange={(e) => setForm({ ...form, defaultValue: e.target.value })}
+            fullWidth
+            disabled={Boolean(editing)}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
