@@ -47,7 +47,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Editor } from '@tinymce/tinymce-react';
+import { Editor as DraftEditor, EditorState, convertToRaw, ContentState } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -139,6 +141,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [rasciDialogOpen, setRasciDialogOpen] = React.useState(false);
   const [editingRasciIdx, setEditingRasciIdx] = React.useState(null);
   const [rasciForm, setRasciForm] = React.useState({ teamId: '', roleId: '', responsibilities: [] });
+  const [editorState, setEditorState] = React.useState(() => EditorState.createEmpty());
+
+  React.useEffect(() => {
+    if (dialogOpen) {
+      const blocks = htmlToDraft(form.description || '');
+      const contentState = ContentState.createFromBlockArray(blocks.contentBlocks, blocks.entityMap);
+      setEditorState(EditorState.createWithContent(contentState));
+    }
+  }, [dialogOpen]);
 
   const rasciByTeam = React.useMemo(() => {
     const map = {};
@@ -681,11 +692,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </div>) }
             {tab === 1 && (
             <div style={{ marginTop: '1rem' }}>
-              <Editor
-                value={form.description}
-                onEditorChange={val => setForm({ ...form, description: val })}
-                init={{ height: 200, menubar: false }}
-              />
+              <div style={{ border: '1px solid #ccc', minHeight: 200, padding: '0.5rem' }}>
+                <DraftEditor
+                  editorState={editorState}
+                  onChange={state => {
+                    setEditorState(state);
+                    setForm({ ...form, description: draftToHtml(convertToRaw(state.getCurrentContent())) });
+                  }}
+                />
+              </div>
             </div>
             ) }
             {tab === 2 && (
