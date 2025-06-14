@@ -29,6 +29,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import { jsPDF } from 'jspdf';
 import { SimpleTreeView as TreeView } from '@mui/x-tree-view';
 import { TreeItem } from '@mui/x-tree-view';
@@ -111,6 +114,63 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [allExpanded, setAllExpanded] = React.useState(false);
   const [inheritedTags, setInheritedTags] = React.useState([]);
   const [tab, setTab] = React.useState(0);
+  const [rasciDialogOpen, setRasciDialogOpen] = React.useState(false);
+  const [editingRasciIdx, setEditingRasciIdx] = React.useState(null);
+  const [rasciForm, setRasciForm] = React.useState({ teamId: '', roleId: '', responsibilities: [] });
+
+  const rasciByTeam = React.useMemo(() => {
+    const map = {};
+    rasciLines.forEach((line, idx) => {
+      const team = teams.find(t => t.id === line.teamId);
+      if (!team) return;
+      if (!map[team.id]) map[team.id] = { team, lines: [] };
+      map[team.id].lines.push({ ...line, idx });
+    });
+    const arr = Object.values(map);
+    arr.sort((a, b) => a.team.order - b.team.order);
+    arr.forEach(group => {
+      group.lines.sort((a, b) => {
+        const ra = roles[group.team.id]?.find(r => r.id === a.roleId) || { order: 0 };
+        const rb = roles[group.team.id]?.find(r => r.id === b.roleId) || { order: 0 };
+        return ra.order - rb.order;
+      });
+    });
+    return arr;
+  }, [rasciLines, teams, roles]);
+
+  const openRasciAdd = () => {
+    setEditingRasciIdx(null);
+    setRasciForm({ teamId: '', roleId: '', responsibilities: [] });
+    setRasciDialogOpen(true);
+  };
+
+  const openRasciEdit = (idx) => {
+    const line = rasciLines[idx];
+    if (!line) return;
+    setEditingRasciIdx(idx);
+    setRasciForm({ teamId: line.teamId, roleId: line.roleId, responsibilities: [...line.responsibilities] });
+    setRasciDialogOpen(true);
+  };
+
+  const saveRasciLine = () => {
+    const newLine = { teamId: rasciForm.teamId, roleId: rasciForm.roleId, responsibilities: rasciForm.responsibilities };
+    setRasciLines(prev => {
+      if (editingRasciIdx !== null) {
+        const copy = [...prev];
+        copy[editingRasciIdx] = newLine;
+        return copy;
+      }
+      return [...prev, newLine];
+    });
+    setRasciDialogOpen(false);
+    setEditingRasciIdx(null);
+  };
+
+  const deleteRasciLine = (idx) => {
+    if (window.confirm('¿Eliminar esta línea RASCI?')) {
+      setRasciLines(prev => prev.filter((_, i) => i !== idx));
+    }
+  };
 
   const sortedNodes = React.useMemo(() => {
     const result = [];
@@ -596,67 +656,100 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </div>) }
             {tab === 1 && (
             <div>
-            {rasciLines.map((line, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
-                <FormControl sx={{ mr: 1, minWidth: 120 }}>
-                  <InputLabel>Equipo</InputLabel>
-                  <Select
-                    label="Equipo"
-                    value={line.teamId || ''}
-                    onChange={e => {
-                      const newLines = [...rasciLines];
-                      newLines[idx].teamId = e.target.value;
-                      newLines[idx].roleId = '';
-                      setRasciLines(newLines);
-                    }}
-                  >
-                    {teams.map(t => (
-                      <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+              <Tooltip title="Añadir RASCI">
+                <IconButton onClick={openRasciAdd} size="small">
+                  <AddIcon />
+                </IconButton>
+              </Tooltip>
+              {rasciByTeam.map(group => (
+                <Card key={group.team.id} sx={{ mt: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6">{group.team.order} - {group.team.name}</Typography>
+                    {group.lines.map(line => (
+                      <div key={line.idx} style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+                        <span style={{ flex: 1 }}>{roles[group.team.id]?.find(r => r.id === line.roleId)?.name || ''}</span>
+                        {['R','A','S','C','I'].map(ch => (
+                          <span
+                            key={ch}
+                            style={{
+                              marginRight: '0.25rem',
+                              padding: '0.25rem 0.5rem',
+                              backgroundColor: line.responsibilities.includes(ch) ? '#c8e6c9' : 'transparent',
+                              color: line.responsibilities.includes(ch) ? 'black' : '#ccc',
+                              borderRadius: 4,
+                              border: line.responsibilities.includes(ch) ? '1px solid #a5d6a7' : '1px solid transparent'
+                            }}
+                          >
+                            {ch}
+                          </span>
+                        ))}
+                        <Tooltip title="Editar">
+                          <IconButton size="small" onClick={() => openRasciEdit(line.idx)}>
+                            <EditIcon fontSize="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                          <IconButton size="small" color="error" onClick={() => deleteRasciLine(line.idx)}>
+                            <DeleteIcon fontSize="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
                     ))}
-                  </Select>
-                </FormControl>
-                <FormControl sx={{ mr: 1, minWidth: 120 }}>
-                  <InputLabel>Rol</InputLabel>
-                  <Select
-                    label="Rol"
-                    value={line.roleId || ''}
-                    onChange={e => {
-                      const newLines = [...rasciLines];
-                      newLines[idx].roleId = e.target.value;
-                      setRasciLines(newLines);
-                    }}
-                  >
-                    {(roles[line.teamId] || []).map(r => (
-                      <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                {['R','A','S','C','I'].map(ch => (
-                  <FormControlLabel
-                    key={ch}
-                    control={
-                      <Checkbox
-                        checked={line.responsibilities.includes(ch)}
-                        onChange={e => {
-                          const newLines = [...rasciLines];
-                          if (e.target.checked) {
-                            newLines[idx].responsibilities.push(ch);
-                          } else {
-                            newLines[idx].responsibilities = newLines[idx].responsibilities.filter(c => c !== ch);
-                          }
-                          setRasciLines(newLines);
-                        }}
+                  </CardContent>
+                </Card>
+              ))}
+              <Dialog open={rasciDialogOpen} onClose={() => setRasciDialogOpen(false)}>
+                <DialogTitle>{editingRasciIdx !== null ? 'Editar RASCI' : 'Añadir RASCI'}</DialogTitle>
+                <DialogContent>
+                  <FormControl fullWidth required sx={{ mt: 2 }}>
+                    <InputLabel>Equipo</InputLabel>
+                    <Select
+                      label="Equipo"
+                      value={rasciForm.teamId}
+                      onChange={e => setRasciForm({ ...rasciForm, teamId: e.target.value, roleId: '' })}
+                    >
+                      {teams.map(t => (
+                        <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth required sx={{ mt: 2 }}>
+                    <InputLabel>Rol</InputLabel>
+                    <Select
+                      label="Rol"
+                      value={rasciForm.roleId}
+                      onChange={e => setRasciForm({ ...rasciForm, roleId: e.target.value })}
+                    >
+                      {(roles[rasciForm.teamId] || []).map(r => (
+                        <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <div style={{ display: 'flex', marginTop: '1rem' }}>
+                    {['R','A','S','C','I'].map(ch => (
+                      <FormControlLabel
+                        key={ch}
+                        control={
+                          <Checkbox
+                            checked={rasciForm.responsibilities.includes(ch)}
+                            onChange={e => {
+                              const list = e.target.checked
+                                ? [...rasciForm.responsibilities, ch]
+                                : rasciForm.responsibilities.filter(c => c !== ch);
+                              setRasciForm({ ...rasciForm, responsibilities: list });
+                            }}
+                          />
+                        }
+                        label={ch}
                       />
-                    }
-                    label={ch}
-                  />
-                ))}
-                <Button color="error" onClick={() => {
-                  setRasciLines(rasciLines.filter((_,i)=>i!==idx));
-                }}>Eliminar</Button>
-              </div>
-            ))}
-            <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
+                    ))}
+                  </div>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setRasciDialogOpen(false)}>Cancelar</Button>
+                  <Button onClick={saveRasciLine}>Guardar</Button>
+                </DialogActions>
+              </Dialog>
             </div>)}
             {tab === 2 && editing && (
             <>
