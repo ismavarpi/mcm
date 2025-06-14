@@ -21,6 +21,7 @@ const teamRoutes = require('./routes/teams');
 const roleRoutes = require('./routes/roles');
 const categoriaRoutes = require('./routes/categoriaDocumentos');
 const nodeRoutes = require('./routes/nodes');
+const dataRoutes = require('./routes/data');
 
 app.use('/api/models', modelRoutes);
 app.use('/api/parameters', parameterRoutes);
@@ -30,5 +31,6 @@ app.use('/api/teams/:teamId/roles', roleRoutes);
 app.use('/api/models/:modelId/categoria-documentos', categoriaRoutes);
 app.use('/api/models/:modelId/nodes', nodeRoutes);
 app.use('/api/nodes', nodeRoutes);
+app.use('/api/data', dataRoutes);
 
 module.exports = { app, db };
