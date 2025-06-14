@@ -843,9 +843,18 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                       value={rasciForm.teamId}
                       onChange={e => setRasciForm({ ...rasciForm, teamId: e.target.value, roleId: '' })}
                     >
-                      {teams.map(t => (
-                        <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-                      ))}
+                      {teams
+                        .filter(t => {
+                          const used = rasciLines
+                            .filter((_, idx) => idx !== editingRasciIdx)
+                            .map(l => l.roleId);
+                          const available = (roles[t.id] || []).some(r => !used.includes(r.id));
+                          if (editingRasciIdx !== null && rasciLines[editingRasciIdx].teamId === t.id) return true;
+                          return available;
+                        })
+                        .map(t => (
+                          <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                   <FormControl fullWidth required sx={{ mt: 2 }}>
@@ -855,9 +864,17 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                       value={rasciForm.roleId}
                       onChange={e => setRasciForm({ ...rasciForm, roleId: e.target.value })}
                     >
-                      {(roles[rasciForm.teamId] || []).map(r => (
-                        <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
-                      ))}
+                      {(roles[rasciForm.teamId] || [])
+                        .filter(r => {
+                          const used = rasciLines
+                            .filter((_, idx) => idx !== editingRasciIdx)
+                            .map(l => l.roleId);
+                          if (editingRasciIdx !== null && rasciLines[editingRasciIdx].roleId === r.id) return true;
+                          return !used.includes(r.id);
+                        })
+                        .map(r => (
+                          <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                   <div style={{ display: 'flex', marginTop: '1rem' }}>
