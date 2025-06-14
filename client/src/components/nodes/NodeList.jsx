@@ -667,7 +667,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <IconButton size="small" onClick={() => setDetailsOpen(false)} style={{ position: 'absolute', top: 0, right: 0 }}>
               <ChevronRightIcon />
             </IconButton>
-            <NodeDetails node={viewNode} attachments={viewAttachments} />
+            <NodeDetails
+              node={viewNode}
+              attachments={viewAttachments}
+              onEdit={openEdit}
+              onDelete={handleDelete}
+            />
           </div>
         ) : (
           <div style={{ position: 'absolute', top: 0, right: 0 }}>
