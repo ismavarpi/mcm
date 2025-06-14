@@ -199,6 +199,13 @@ router.post('/:nodeId/attachments', upload.single('file'), async (req, res) => {
   res.json(full);
 });
 
+router.get('/attachments/:id/download', async (req, res) => {
+  const att = await NodeAttachment.findByPk(req.params.id);
+  if (!att) return res.status(404).end();
+  const file = path.join(__dirname, '..', att.filePath);
+  res.download(file, att.name);
+});
+
 router.delete('/attachments/:id', async (req, res) => {
   const att = await NodeAttachment.findByPk(req.params.id);
   if (att) {
