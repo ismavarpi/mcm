@@ -47,6 +47,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { Editor } from '@tinymce/tinymce-react';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -103,7 +104,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '' });
+  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -274,6 +275,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       name: form.name,
       parentId: form.parentId || null,
       codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
+      description: form.description,
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
@@ -285,7 +287,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
     setFocusNodeId(res.data.id);
     setDialogOpen(false);
-    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '' });
+    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
@@ -316,7 +318,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       code: node.code,
       name: node.name,
       patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
-      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern
+      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern,
+      description: node.description || ''
     });
     const parent = nodes.find(n => n.id === node.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
@@ -340,7 +343,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const openCreate = (parentId = '') => {
     setEditing(null);
-    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '' });
+    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '' });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -567,6 +570,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           <DialogContent>
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label="Datos del nodo" />
+              <Tab label="Descripción" />
               <Tab label="RASCI" />
               <Tab label="Adjuntos" />
             </Tabs>
@@ -676,6 +680,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </FormControl>
             </div>) }
             {tab === 1 && (
+            <div style={{ marginTop: '1rem' }}>
+              <Editor
+                value={form.description}
+                onEditorChange={val => setForm({ ...form, description: val })}
+                init={{ height: 200, menubar: false }}
+              />
+            </div>
+            ) }
+            {tab === 2 && (
             <div>
               <Tooltip title="Añadir RASCI">
                 <IconButton onClick={openRasciAdd} size="small">
@@ -772,7 +785,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </DialogActions>
               </Dialog>
             </div>)}
-            {tab === 2 && editing && (
+            {tab === 3 && editing && (
             <>
               <div style={{ marginTop: '1rem' }}>
                 <TableContainer component={Paper}>
