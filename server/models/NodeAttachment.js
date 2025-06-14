@@ -18,5 +18,5 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 1,
     },
-  });
+  }, { tableName: 'node_attachments' });
 };
