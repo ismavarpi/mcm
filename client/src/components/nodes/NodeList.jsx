@@ -614,28 +614,29 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               fullWidth
               sx={{ mt: 2 }}
             />
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel>Patrón de código</InputLabel>
-              <Select
-                label="Patrón de código"
-                value={form.patternType}
-                onChange={e => setForm({ ...form, patternType: e.target.value })}
-              >
-                <MenuItem value="order">Por orden</MenuItem>
-                <MenuItem value="text">Texto</MenuItem>
-              </Select>
-            </FormControl>
-            {form.patternType === 'text' && (
-              <TextField
-                required
-                label="Texto"
-                value={form.patternText}
-                inputProps={{ maxLength: 5 }}
-                onChange={e => setForm({ ...form, patternText: e.target.value.toUpperCase() })}
-                fullWidth
-                sx={{ mt: 2 }}
-              />
-            )}
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '16px' }}>
+              <FormControl sx={{ flex: 1 }}>
+                <InputLabel>Patrón de código</InputLabel>
+                <Select
+                  label="Patrón de código"
+                  value={form.patternType}
+                  onChange={e => setForm({ ...form, patternType: e.target.value })}
+                >
+                  <MenuItem value="order">Por orden</MenuItem>
+                  <MenuItem value="text">Texto</MenuItem>
+                </Select>
+              </FormControl>
+              {form.patternType === 'text' && (
+                <TextField
+                  required
+                  label="Texto"
+                  value={form.patternText}
+                  inputProps={{ maxLength: 5 }}
+                  onChange={e => setForm({ ...form, patternText: e.target.value.toUpperCase() })}
+                  sx={{ width: '10rem' }}
+                />
+              )}
+            </div>
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Etiquetas</InputLabel>
               <Select
