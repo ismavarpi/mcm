@@ -14,6 +14,22 @@ const {
 const router = express.Router({ mergeParams: true });
 const upload = multer({ dest: path.join(__dirname, '..', 'uploads') });
 
+function validateRasciLines(rasci) {
+  if (!rasci || !rasci.length) return;
+  let countA = 0;
+  let countR = 0;
+  for (const line of rasci) {
+    if (line.responsibilities.includes('A')) countA++;
+    if (line.responsibilities.includes('R')) countR++;
+  }
+  if (countA === 0 || countR === 0) {
+    throw new Error('Debe existir al menos un rol con responsabilidad A y otro con responsabilidad R');
+  }
+  if (countA > 1 || countR > 1) {
+    throw new Error('Solo puede haber un rol con responsabilidad A y uno con responsabilidad R');
+  }
+}
+
 router.get('/', async (req, res) => {
   const nodes = await Node.findAll({
     where: { modelId: req.params.modelId },
@@ -28,6 +44,11 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
+  try {
+    validateRasciLines(rasci);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   const parentTags = data.parentId
     ? (await Node.findByPk(data.parentId, { include: { model: Tag, as: 'tags' } })).tags.map(t => t.id)
     : [];
@@ -54,6 +75,11 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
+  try {
+    validateRasciLines(rasci);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
   if (codePattern !== 'ORDER') {
     if (!codePattern.trim()) return res.status(400).json({ error: 'Código requerido' });
