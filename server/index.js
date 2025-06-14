@@ -129,6 +129,10 @@ const Node = sequelize.define('Node', {
     allowNull: false,
     defaultValue: '',
   },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   modelId: {
     type: DataTypes.INTEGER,
     allowNull: false,

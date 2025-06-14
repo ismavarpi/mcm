@@ -1,5 +1,7 @@
 import React from 'react';
 import axios from 'axios';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import useProcessingAction from '../hooks/useProcessingAction';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -93,7 +95,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '' });
+  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -193,6 +195,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       name: form.name,
       parentId: form.parentId || null,
       codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
+      description: form.description,
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
@@ -235,7 +238,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       code: node.code,
       name: node.name,
       patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
-      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern
+      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern,
+      description: node.description || ''
     });
     const parent = nodes.find(n => n.id === node.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
@@ -259,7 +263,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const openCreate = (parentId = '') => {
     setEditing(null);
-    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '' });
+    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '' });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -486,6 +490,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           <DialogContent>
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label="Datos del nodo" />
+              <Tab label="Descripción" />
               <Tab label="RASCI" />
               <Tab label="Adjuntos" />
             </Tabs>
@@ -596,6 +601,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </div>) }
             {tab === 1 && (
             <div>
+              <ReactQuill theme="snow" value={form.description} onChange={val => setForm({ ...form, description: val })} style={{ height: '200px', marginBottom: '1rem' }} />
+            </div>)}
+            {tab === 2 && (
+            <div>
             {rasciLines.map((line, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
                 <FormControl sx={{ mr: 1, minWidth: 120 }}>
@@ -658,7 +667,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             ))}
             <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
             </div>)}
-            {tab === 2 && editing && (
+            {tab === 3 && editing && (
             <>
               <div style={{ marginTop: '1rem' }}>
                   <FormControl fullWidth required sx={{ mt: 2 }}>
