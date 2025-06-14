@@ -37,6 +37,8 @@ import { SimpleTreeView as TreeView } from '@mui/x-tree-view';
 import { TreeItem } from '@mui/x-tree-view';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -150,6 +152,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [editingRasciIdx, setEditingRasciIdx] = React.useState(null);
   const [rasciForm, setRasciForm] = React.useState({ teamId: '', roleId: '', responsibilities: [] });
   const [editorState, setEditorState] = React.useState(() => EditorState.createEmpty());
+  const [detailsOpen, setDetailsOpen] = React.useState(true);
+  const [leftWidth, setLeftWidth] = React.useState(40); // percentage
+  const containerRef = React.useRef(null);
+  const resizing = React.useRef(false);
   const handleKeyCommand = (command, state) => {
     const newState = RichUtils.handleKeyCommand(state, command);
     if (newState) {
@@ -166,6 +172,24 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const toggleBlockType = type => {
     setEditorState(RichUtils.toggleBlockType(editorState, type));
   };
+
+  React.useEffect(() => {
+    const handleMove = (e) => {
+      if (!resizing.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      let newLeft = ((e.clientX - rect.left) / rect.width) * 100;
+      if (newLeft < 10) newLeft = 10;
+      if (newLeft > 90) newLeft = 90;
+      setLeftWidth(newLeft);
+    };
+    const stopResize = () => { resizing.current = false; };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', stopResize);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', stopResize);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (dialogOpen) {
@@ -534,8 +558,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           <div style={{ fontSize: '1rem', color: '#666' }}>{modelName}</div>
         </div>
       </div>
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <div style={{ width: '40%', minWidth: 300, padding: '1rem', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
+      <div ref={containerRef} style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ width: detailsOpen ? `${leftWidth}%` : '100%', minWidth: 300, padding: '1rem', overflowY: 'auto', borderRight: detailsOpen ? '1px solid #ccc' : 'none' }}>
           <Tooltip title="Nuevo nodo raíz">
             <IconButton onClick={() => openCreate('')}>
               <AddIcon />
@@ -623,15 +647,35 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             const id = parseInt(idStr, 10);
             const node = nodes.find(n => n.id === id);
             setViewNode(node || null);
+            if (node && !detailsOpen) setDetailsOpen(true);
           }}
           expansionTrigger="iconContainer"
         >
           {renderTree(null)}
         </TreeView>
         </div>
-        <div style={{ flex: 1, padding: '1rem', overflowY: 'auto' }}>
-          <NodeDetails node={viewNode} attachments={viewAttachments} />
-        </div>
+        {detailsOpen && (
+          <div
+            style={{ width: '5px', cursor: 'col-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#eee' }}
+            onMouseDown={() => { resizing.current = true; }}
+          >
+            <DragIndicatorIcon fontSize="small" />
+          </div>
+        )}
+        {detailsOpen ? (
+          <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto', position: 'relative' }}>
+            <IconButton size="small" onClick={() => setDetailsOpen(false)} style={{ position: 'absolute', top: 0, right: 0 }}>
+              <ChevronRightIcon />
+            </IconButton>
+            <NodeDetails node={viewNode} attachments={viewAttachments} />
+          </div>
+        ) : (
+          <div style={{ position: 'absolute', top: 0, right: 0 }}>
+            <IconButton size="small" onClick={() => setDetailsOpen(true)}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </div>
+        )}
       </div>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>{editing ? 'Editar' : 'Nuevo'} nodo</DialogTitle>
