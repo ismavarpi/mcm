@@ -92,9 +92,14 @@ router.put('/:id', async (req, res) => {
     if (conflict) return res.status(400).json({ error: 'Código duplicado' });
   }
   const previousPattern = node.codePattern;
+  const oldParentId = node.parentId;
   await node.update({ ...data, codePattern });
   await updateNodeAndDescendants(Node, node);
-  if (previousPattern === 'ORDER' && codePattern !== 'ORDER') {
+  const parentChanged = node.parentId !== oldParentId;
+  if (parentChanged) {
+    if (oldParentId) await recalculateSiblingOrders(Node, oldParentId);
+    await recalculateSiblingOrders(Node, node.parentId);
+  } else if (previousPattern === 'ORDER' && codePattern !== 'ORDER') {
     await recalculateSiblingOrders(Node, node.parentId);
   }
   const oldTagIds = node.tags.map(t => t.id);
