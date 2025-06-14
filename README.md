@@ -96,3 +96,9 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    ```
 
 Con estos pasos la aplicación queda desplegada y lista para usarse.
+
+## Importación y exportación de datos
+
+Desde la sección de administración se puede descargar un volcado SQL de todos los registros pulsando en **Exportar**. El fichero generado contiene sentencias `INSERT` con actualización automática si el registro ya existe.
+
+Para importar, seleccione un fichero `.sql` y elija qué entidades cargar. Tras ejecutar la importación se mostrará un log con el resultado de cada sentencia.
