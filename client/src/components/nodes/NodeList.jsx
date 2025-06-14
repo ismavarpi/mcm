@@ -871,7 +871,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                         <TableRow key={att.id}>
                           <TableCell>{att.CategoriaDocumento.name}</TableCell>
                           <TableCell>
-                            <a href={`/${att.filePath}`} target="_blank" rel="noopener noreferrer">{att.name}</a>
+                            <a href={`/${att.filePath}`} download>{att.name}</a>
                           </TableCell>
                           <TableCell>
                             <Tooltip title="Eliminar archivo">
