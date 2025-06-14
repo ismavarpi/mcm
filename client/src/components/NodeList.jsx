@@ -36,6 +36,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Autocomplete from '@mui/material/Autocomplete';
 
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
@@ -110,6 +111,21 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [allExpanded, setAllExpanded] = React.useState(false);
   const [inheritedTags, setInheritedTags] = React.useState([]);
   const [tab, setTab] = React.useState(0);
+
+  const sortedNodes = React.useMemo(() => {
+    const result = [];
+    const walk = (pid = null) => {
+      nodes
+        .filter(n => n.parentId === pid)
+        .sort((a, b) => a.order - b.order)
+        .forEach(n => {
+          result.push(n);
+          walk(n.id);
+        });
+    };
+    walk(null);
+    return result;
+  }, [nodes]);
 
   const load = async () => {
     const [nodesRes, tagsRes, teamsRes] = await Promise.all([
@@ -475,23 +491,33 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </Tabs>
             {tab === 0 && (
             <div>
-            <FormControl fullWidth>
-              <InputLabel>Nodo padre</InputLabel>
-              <Select
-                label="Nodo padre"
-                value={form.parentId}
-                onChange={(e) => setForm({ ...form, parentId: e.target.value })}
-              >
-                <MenuItem value=""><em>Ninguno</em></MenuItem>
-                {nodes.filter(n => !editing || n.id !== editing.id).map(n => (
-                  <MenuItem key={n.id} value={n.id}>{n.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              fullWidth
+              options={[{ id: '', code: '', name: 'Ninguno', isNone: true },
+                ...sortedNodes.filter(n => !editing || n.id !== editing.id)]}
+              getOptionLabel={opt => opt.isNone ? opt.name : `[${opt.code}] ${opt.name}`}
+              filterOptions={(options, state) =>
+                options.filter(o =>
+                  o.isNone ||
+                  o.name.toLowerCase().includes(state.inputValue.toLowerCase()) ||
+                  o.code.toLowerCase().includes(state.inputValue.toLowerCase())
+                )
+              }
+              renderOption={(props, option) => option.isNone ? (
+                <li {...props}><em>{option.name}</em></li>
+              ) : (
+                <li {...props}><strong>[{option.code}]</strong> {option.name}</li>
+              )}
+              value={sortedNodes.find(n => n.id === form.parentId) || null}
+              onChange={(e, val) => setForm({ ...form, parentId: val ? val.id : '' })}
+              renderInput={(params) => <TextField {...params} label="Nodo padre" />}
+              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              sx={{ mb: 2 }}
+            />
             <TextField
               label="Código"
               value={form.code}
-              InputProps={{ readOnly: true }}
+              inputProps={{ readOnly: true, style: { userSelect: 'none' } }}
               fullWidth
               sx={{ mt: 2 }}
             />
