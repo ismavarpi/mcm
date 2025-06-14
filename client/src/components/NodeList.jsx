@@ -111,6 +111,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [allExpanded, setAllExpanded] = React.useState(false);
   const [inheritedTags, setInheritedTags] = React.useState([]);
   const [tab, setTab] = React.useState(0);
+  const tabRefs = [React.useRef(null), React.useRef(null), React.useRef(null)];
+  const [tabHeight, setTabHeight] = React.useState(0);
 
   const sortedNodes = React.useMemo(() => {
     const result = [];
@@ -177,6 +179,16 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   };
 
   React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
+
+  React.useLayoutEffect(() => {
+    if (dialogOpen) {
+      const heights = tabRefs.map(r => (r.current ? r.current.offsetHeight : 0));
+      const max = Math.max(0, ...heights);
+      if (max !== tabHeight) setTabHeight(max);
+    } else {
+      setTabHeight(0);
+    }
+  }, [dialogOpen, form, rasciLines, attachments]);
 
   const [saveNode, saving] = useProcessingAction(async () => {
     const countA = rasciLines.filter(l => l.responsibilities.includes('A')).length;
@@ -489,8 +501,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               <Tab label="RASCI" />
               <Tab label="Adjuntos" />
             </Tabs>
-            {tab === 0 && (
-            <div>
+            <div style={{ minHeight: tabHeight }}>
+            <div ref={tabRefs[0]} style={{ display: tab === 0 ? 'block' : 'none' }}>
             <Autocomplete
               fullWidth
               options={[{ id: '', code: '', name: 'Ninguno', isNone: true },
@@ -593,9 +605,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
-            </div>) }
-            {tab === 1 && (
-            <div>
+            </div>
+            <div ref={tabRefs[1]} style={{ display: tab === 1 ? 'block' : 'none' }}>
             {rasciLines.map((line, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
                 <FormControl sx={{ mr: 1, minWidth: 120 }}>
@@ -656,9 +667,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 }}>Eliminar</Button>
               </div>
             ))}
-            <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
-            </div>)}
-            {tab === 2 && editing && (
+              <Button sx={{ mt: 2 }} onClick={() => setRasciLines([...rasciLines, { teamId: '', roleId: '', responsibilities: [] }])}>Añadir RASCI</Button>
+            </div>
+            <div ref={tabRefs[2]} style={{ display: tab === 2 ? 'block' : 'none' }}>
+            {editing && (
             <>
               <div style={{ marginTop: '1rem' }}>
                   <FormControl fullWidth required sx={{ mt: 2 }}>
@@ -717,6 +729,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </div>
               </>
             )}
+            </div>
+            </div>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
