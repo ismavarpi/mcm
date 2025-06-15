@@ -19,6 +19,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import TouchAppIcon from '@mui/icons-material/TouchApp';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -201,9 +202,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [allExpanded, setAllExpanded] = React.useState(false);
   const [inheritedTags, setInheritedTags] = React.useState([]);
   const [tab, setTab] = React.useState(0);
-  const [rasciDialogOpen, setRasciDialogOpen] = React.useState(false);
-  const [editingRasciIdx, setEditingRasciIdx] = React.useState(null);
-  const [rasciForm, setRasciForm] = React.useState({ teamId: '', roleId: '', responsibilities: [] });
   const [editorState, setEditorState] = React.useState(() => EditorState.createEmpty());
   const [detailsOpen, setDetailsOpen] = React.useState(true);
   const [leftWidth, setLeftWidth] = React.useState(40); // percentage
@@ -314,33 +312,39 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     return arr;
   }, [rasciLines, teams, roles]);
 
-
-  const openRasciEdit = (idx) => {
-    const line = rasciLines[idx];
-    if (!line) return;
-    setEditingRasciIdx(idx);
-    setRasciForm({ teamId: line.teamId, roleId: line.roleId, responsibilities: [...line.responsibilities] });
-    setRasciDialogOpen(true);
-  };
-
-  const saveRasciLine = () => {
-    const newLine = { teamId: rasciForm.teamId, roleId: rasciForm.roleId, responsibilities: rasciForm.responsibilities };
-    setRasciLines(prev => {
-      if (editingRasciIdx !== null) {
-        const copy = [...prev];
-        copy[editingRasciIdx] = newLine;
-        return copy;
-      }
-      return [...prev, newLine];
+  const completeRasciLines = React.useCallback((lines) => {
+    const all = [...lines];
+    teams.forEach(t => {
+      (roles[t.id] || []).forEach(r => {
+        if (!all.some(l => l.roleId === r.id)) {
+          all.push({ teamId: t.id, roleId: r.id, responsibilities: [] });
+        }
+      });
     });
-    setRasciDialogOpen(false);
-    setEditingRasciIdx(null);
-  };
+    all.sort((a, b) => {
+      const ta = teams.find(t => t.id === a.teamId) || { order: 0 };
+      const tb = teams.find(t => t.id === b.teamId) || { order: 0 };
+      if (ta.order !== tb.order) return ta.order - tb.order;
+      const ra = roles[ta.id]?.find(r => r.id === a.roleId) || { order: 0 };
+      const rb = roles[tb.id]?.find(r => r.id === b.roleId) || { order: 0 };
+      return ra.order - rb.order;
+    });
+    return all;
+  }, [teams, roles]);
 
-  const deleteRasciLine = (idx) => {
-    if (window.confirm('¿Eliminar esta línea RASCI?')) {
-      setRasciLines(prev => prev.filter((_, i) => i !== idx));
-    }
+
+
+  const toggleResp = (idx, ch) => {
+    setRasciLines(prev => prev.map((line, i) => {
+      if (i !== idx) return line;
+      const selected = line.responsibilities.includes(ch);
+      return {
+        ...line,
+        responsibilities: selected
+          ? line.responsibilities.filter(c => c !== ch)
+          : [...line.responsibilities, ch]
+      };
+    }));
   };
 
   const sortedNodes = React.useMemo(() => {
@@ -524,7 +528,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       const rb = roles[tb.id]?.find(r=>r.id===b.roleId)||{order:0};
       return ra.order-rb.order;
     });
-    setRasciLines(sorted.map(r=>({id:r.id, teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')})));
+    setRasciLines(completeRasciLines(sorted.map(r=>({id:r.id, teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')}))));
     loadAttachments(node.id);
     setTab(0);
     setDialogOpen(true);
@@ -548,9 +552,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         const rb = roles[tb.id]?.find(r=>r.id===b.roleId)||{order:0};
         return ra.order-rb.order;
       });
-      setRasciLines(sorted.map(r=>({teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')})));
+      setRasciLines(completeRasciLines(sorted.map(r=>({teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')}))));
     } else {
-      setRasciLines([]);
+      setRasciLines(completeRasciLines([]));
     }
     setAttachments([]);
     setAttForm({ categoryId: '', name: '', file: null });
@@ -1068,96 +1072,20 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                               backgroundColor: line.responsibilities.includes(ch) ? rasciStyles[ch].bg : 'transparent',
                               color: line.responsibilities.includes(ch) ? 'black' : '#ccc',
                               borderRadius: 4,
-                              border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent'
+                              border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent',
+                              cursor: 'pointer'
                             }}
+                            onClick={() => toggleResp(line.idx, ch)}
                           >
                             {ch}
                           </span>
                         ))}
-                        <Tooltip title="Editar">
-                          <IconButton size="small" onClick={() => openRasciEdit(line.idx)}>
-                            <EditIcon fontSize="inherit" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                          <IconButton size="small" color="error" onClick={() => deleteRasciLine(line.idx)}>
-                            <DeleteIcon fontSize="inherit" />
-                          </IconButton>
-                        </Tooltip>
+                        <TouchAppIcon fontSize="inherit" sx={{ ml: 0.5, color: '#888' }} />
                       </div>
                     ))}
                   </CardContent>
                 </Card>
               ))}
-              <Dialog open={rasciDialogOpen} onClose={() => setRasciDialogOpen(false)}>
-                <DialogTitle>{editingRasciIdx !== null ? 'Editar RASCI' : 'Añadir RASCI'}</DialogTitle>
-                <DialogContent>
-                  <FormControl fullWidth required sx={{ mt: 2 }}>
-                    <InputLabel>Equipo</InputLabel>
-                    <Select
-                      label="Equipo"
-                      value={rasciForm.teamId}
-                      onChange={e => setRasciForm({ ...rasciForm, teamId: e.target.value, roleId: '' })}
-                    >
-                      {teams
-                        .filter(t => {
-                          const used = rasciLines
-                            .filter((_, idx) => idx !== editingRasciIdx)
-                            .map(l => l.roleId);
-                          const available = (roles[t.id] || []).some(r => !used.includes(r.id));
-                          if (editingRasciIdx !== null && rasciLines[editingRasciIdx].teamId === t.id) return true;
-                          return available;
-                        })
-                        .map(t => (
-                          <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                  <FormControl fullWidth required sx={{ mt: 2 }}>
-                    <InputLabel>Rol</InputLabel>
-                    <Select
-                      label="Rol"
-                      value={rasciForm.roleId}
-                      onChange={e => setRasciForm({ ...rasciForm, roleId: e.target.value })}
-                    >
-                      {(roles[rasciForm.teamId] || [])
-                        .filter(r => {
-                          const used = rasciLines
-                            .filter((_, idx) => idx !== editingRasciIdx)
-                            .map(l => l.roleId);
-                          if (editingRasciIdx !== null && rasciLines[editingRasciIdx].roleId === r.id) return true;
-                          return !used.includes(r.id);
-                        })
-                        .map(r => (
-                          <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                  <div style={{ display: 'flex', marginTop: '1rem' }}>
-                    {['R','A','S','C','I'].map(ch => (
-                      <FormControlLabel
-                        key={ch}
-                        control={
-                          <Checkbox
-                            checked={rasciForm.responsibilities.includes(ch)}
-                            onChange={e => {
-                              const list = e.target.checked
-                                ? [...rasciForm.responsibilities, ch]
-                                : rasciForm.responsibilities.filter(c => c !== ch);
-                              setRasciForm({ ...rasciForm, responsibilities: list });
-                            }}
-                          />
-                        }
-                        label={ch}
-                      />
-                    ))}
-                  </div>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setRasciDialogOpen(false)}>Cancelar</Button>
-                  <Button onClick={saveRasciLine}>Guardar</Button>
-                </DialogActions>
-              </Dialog>
             </div>)}
             {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && (
             <> 

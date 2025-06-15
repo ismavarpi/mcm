@@ -108,12 +108,25 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
+  const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
+  let finalRasci = rasci || [];
+  const teams = await Team.findAll({ where: { modelId: node.modelId } });
+  const allRoles = [];
+  for (const t of teams) {
+    const rs = await Role.findAll({ where: { teamId: t.id } });
+    allRoles.push(...rs.map(r => r.id));
+  }
+  const existingIds = finalRasci.map(r => r.roleId);
+  for (const roleId of allRoles) {
+    if (!existingIds.includes(roleId)) {
+      finalRasci.push({ roleId, responsibilities: [] });
+    }
+  }
   try {
-    validateRasciLines(rasci);
+    validateRasciLines(finalRasci);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
-  const node = await Node.findByPk(req.params.id, { include: { model: Tag, as: 'tags' } });
   if (codePattern !== 'ORDER') {
     if (!codePattern.trim()) return res.status(400).json({ error: 'Código requerido' });
     const conflict = await Node.findOne({ where: { parentId: data.parentId ?? node.parentId, codePattern, id: { [Op.ne]: node.id } } });
@@ -140,9 +153,9 @@ router.put('/:id', async (req, res) => {
   const removed = oldTagIds.filter(id => !finalTags.includes(id));
   if (added.length) await addTagsToDescendants(Node, node.id, added);
   if (removed.length) await removeTagsFromDescendants(Node, node.id, removed);
-  if (rasci) {
+  if (finalRasci) {
     await NodeRasci.destroy({ where: { nodeId: node.id } });
-    for (const line of rasci) {
+    for (const line of finalRasci) {
       await NodeRasci.create({ nodeId: node.id, roleId: line.roleId, responsibilities: line.responsibilities.join('') });
     }
   }
