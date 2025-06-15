@@ -184,6 +184,27 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setEditorState(RichUtils.toggleBlockType(editorState, type));
   };
 
+  const handleTeamFilter = (teamId) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole('');
+    setFilterResp('');
+  };
+
+  const handleRoleFilter = (teamId, roleId) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole(roleId);
+    setFilterResp('');
+  };
+
+  const handleRespFilter = (teamId, roleId, resp) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole(roleId);
+    setFilterResp(resp);
+  };
+
   React.useEffect(() => {
     const handleMove = (e) => {
       if (!resizing.current || !containerRef.current) return;
@@ -727,6 +748,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               onEdit={openEdit}
               onDelete={handleDelete}
               onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
+              onTeamClick={handleTeamFilter}
+              onRoleClick={handleRoleFilter}
+              onRespClick={handleRespFilter}
               onClose={() => setDetailsOpen(false)}
             />
           </div>
