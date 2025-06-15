@@ -453,10 +453,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     nodes.forEach(n => {
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
       const matchesTags = filterTags.length === 0 || (n.tags && n.tags.some(t => filterTags.includes(t.id)));
-      const matchesTeam = !filterTeam || (n.rascis && n.rascis.some(r => r.Role.teamId === filterTeam));
-      const matchesRole = !filterRole || (n.rascis && n.rascis.some(r => r.roleId === filterRole));
-      const matchesResp = !filterResp || (n.rascis && n.rascis.some(r => r.responsibilities.includes(filterResp)));
-      if (matchesText && matchesTags && matchesTeam && matchesRole && matchesResp) {
+      const matchesRasci = (!filterTeam && !filterRole && !filterResp) ||
+        (n.rascis && n.rascis.some(r =>
+          (!filterTeam || r.Role.teamId === filterTeam) &&
+          (!filterRole || r.roleId === filterRole) &&
+          (!filterResp || r.responsibilities.includes(filterResp))
+        ));
+      if (matchesText && matchesTags && matchesRasci) {
         let current = n;
         while (current) {
           ids.add(current.id);
