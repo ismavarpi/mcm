@@ -92,6 +92,13 @@ async function initDatabase(retries = 5, delayMs = 2000) {
         where: { name: 'Jira token' },
         defaults: { value: 'changeme', defaultValue: 'changeme' }
       });
+
+      const { v4: uuidv4 } = require('uuid');
+      const atts = await db.NodeAttachment.findAll({ where: { uuid: null } });
+      for (const att of atts) {
+        att.uuid = uuidv4();
+        await att.save();
+      }
       return;
     } catch (err) {
       if (attempt >= retries) throw err;

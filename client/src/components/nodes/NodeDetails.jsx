@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { jsPDF } from 'jspdf';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -32,6 +33,19 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
       callback: () => doc.save(`${node.code}.pdf`),
       html2canvas: { scale: 0.8 }
     });
+  };
+
+  const downloadAttachment = async (uuid, name) => {
+    const res = await fetch(`/api/nodes/attachments/download/${uuid}`);
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', name);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
   const rasciByTeam = React.useMemo(() => {
     if (!node.rascis) return [];
@@ -155,8 +169,11 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
           <ul>
             {attachments.map(att => (
               <li key={att.id}>
-                <a href={`/api/nodes/attachments/${att.id}/download`}>{att.name}</a>{' '}
+                {att.name}{' '}
                 (<span>{att.CategoriaDocumento.name}</span>)
+                <IconButton size="small" onClick={() => downloadAttachment(att.uuid, att.name)} sx={{ ml: 1 }}>
+                  <FileDownloadIcon fontSize="inherit" />
+                </IconButton>
               </li>
             ))}
           </ul>

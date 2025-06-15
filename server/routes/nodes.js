@@ -216,8 +216,8 @@ router.post('/:nodeId/attachments', upload.single('file'), async (req, res) => {
   res.json(full);
 });
 
-router.get('/attachments/:id/download', async (req, res) => {
-  const att = await NodeAttachment.findByPk(req.params.id);
+router.get('/attachments/download/:uuid', async (req, res) => {
+  const att = await NodeAttachment.findOne({ where: { uuid: req.params.uuid } });
   if (!att) return res.status(404).end();
   const file = path.join(__dirname, '..', att.filePath);
   if (!fs.existsSync(file)) return res.status(404).end();
