@@ -40,9 +40,13 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
     if (!res.ok) return;
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
+    const disposition = res.headers.get('content-disposition') || '';
+    let filename = name;
+    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    if (match) filename = match[1].replace(/['"]/g, '');
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', name);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -68,6 +68,32 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
+// Renderizador para bloques de imagen en el editor WYSIWYG
+function ImageBlock(props) {
+  const entity = props.contentState.getEntity(props.block.getEntityAt(0));
+  if (entity.getType() !== 'IMAGE') return null;
+  const { src, width, height, alt } = entity.getData();
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      style={{ maxWidth: '100%' }}
+    />
+  );
+}
+
+function blockRenderer(block) {
+  if (block.getType() === 'atomic') {
+    return {
+      component: ImageBlock,
+      editable: false
+    };
+  }
+  return null;
+}
+
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
   const rows = data.map(n => `${n.code};${n.name};${n.parentId || ''};${n.modelId}`);
@@ -123,7 +149,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
+  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -157,9 +183,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [downloadAttachment] = useProcessingAction(async (uuid, name) => {
     const res = await axios.get(`/api/nodes/attachments/download/${uuid}`, { responseType: 'blob' });
     const url = window.URL.createObjectURL(new Blob([res.data]));
+    const disposition = res.headers['content-disposition'] || '';
+    let filename = name;
+    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    if (match) filename = match[1].replace(/['"]/g, '');
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', name);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -413,6 +443,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       parentId: form.parentId || null,
       codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
       description: form.description,
+      bold: form.bold,
+      underline: form.underline,
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
@@ -423,7 +455,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       res = await axios.post(`/api/models/${modelId}/nodes`, payload);
     }
     setDialogOpen(false);
-    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
+    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
@@ -458,7 +490,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       name: node.name,
       patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
       patternText: node.codePattern === 'ORDER' ? '' : node.codePattern,
-      description: node.description || ''
+      description: node.description || '',
+      bold: !!node.bold,
+      underline: !!node.underline
     });
     const parent = nodes.find(n => n.id === node.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
@@ -483,7 +517,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const openCreate = async (parentId = '') => {
     setEditing(null);
     setEditingLeaf(true);
-    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '' });
+    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -510,20 +544,24 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const visibleIds = React.useMemo(() => {
     const map = Object.fromEntries(nodes.map(n => [n.id, n]));
+    const parentIds = new Set(nodes.map(n => n.parentId).filter(id => id));
     const ids = new Set();
-    if (!filter && filterTags.length === 0 && !filterTeam && !filterRole && !filterResp) {
+    const rasciFiltering = !!(filterTeam || filterRole || filterResp);
+    if (!filter && filterTags.length === 0 && !rasciFiltering) {
       nodes.forEach(n => ids.add(n.id));
       return ids;
     }
     nodes.forEach(n => {
+      const isLeaf = !parentIds.has(n.id);
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
       const matchesTags = filterTags.length === 0 || (n.tags && filterTags.every(tagId => n.tags.some(t => t.id === tagId)));
-      const matchesRasci = (!filterTeam && !filterRole && !filterResp) ||
-        (n.rascis && n.rascis.some(r =>
+      const matchesRasci = !rasciFiltering || (
+        isLeaf && n.rascis && n.rascis.some(r =>
           (!filterTeam || r.Role.teamId === filterTeam) &&
           (!filterRole || r.roleId === filterRole) &&
           (!filterResp || r.responsibilities.includes(filterResp))
-        ));
+        )
+      );
       if (matchesText && matchesTags && matchesRasci) {
         let current = n;
         while (current) {
@@ -546,7 +584,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <strong style={{ marginRight: '0.25rem' }}>[{n.code}]</strong>
-              <span style={{ marginRight: '0.5rem' }}>{n.name}</span>
+              <span
+                style={{
+                  marginRight: '0.5rem',
+                  fontWeight: n.bold ? 'bold' : 'normal',
+                  textDecoration: n.underline ? 'underline' : 'none'
+                }}
+              >
+                {n.name}
+              </span>
 
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {n.tags && n.tags.map(tag => (
@@ -921,6 +967,16 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <FormControlLabel
+                control={<Checkbox checked={form.bold} onChange={e => setForm({ ...form, bold: e.target.checked })} />}
+                label="Nombre en negrita"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={form.underline} onChange={e => setForm({ ...form, underline: e.target.checked })} />}
+                label="Nombre subrayado"
+              />
+            </div>
             </div>) }
             {tab === 1 && (
             <div style={{ marginTop: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -971,6 +1027,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                     setForm({ ...form, description: draftToHtml(convertToRaw(state.getCurrentContent())) });
                   }}
                   handleKeyCommand={handleKeyCommand}
+                  blockRendererFn={blockRenderer}
                 />
               </div>
             </div>
@@ -1089,8 +1146,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </DialogActions>
               </Dialog>
             </div>)}
-            {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && editing && (
-            <>
+            {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && (
+            <> 
+              {editing ? (
+              <>
               <div style={{ marginTop: '1rem' }}>
                 <TableContainer component={Paper}>
                   <Table size="small">
@@ -1166,6 +1225,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                   Añadir
                 </Button>
               </div>
+              </>
+              ) : (
+                <Typography sx={{ mt: 2 }}>
+                  Guarde el nodo para poder añadir adjuntos.
+                </Typography>
+              )}
             </>
             )}
           </DialogContent>
