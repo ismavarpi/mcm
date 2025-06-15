@@ -153,6 +153,16 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     await axios.delete(`/api/nodes/attachments/${id}`);
     loadAttachments(editing.id);
   });
+  const [downloadAttachment] = useProcessingAction(async (uuid, name) => {
+    const res = await axios.get(`/api/nodes/attachments/download/${uuid}`, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', name);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
   const [expanded, setExpanded] = React.useState([]);
   const [selected, setSelected] = React.useState('');
   const [focusNodeId, setFocusNodeId] = React.useState(null);
@@ -1089,10 +1099,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                       {attachments.map(att => (
                         <TableRow key={att.id}>
                           <TableCell>{att.CategoriaDocumento.name}</TableCell>
+                          <TableCell>{att.name}</TableCell>
                           <TableCell>
-                            <a href={`/api/nodes/attachments/${att.id}/download`}>{att.name}</a>
-                          </TableCell>
-                          <TableCell>
+                            <Tooltip title="Descargar" sx={{ mr: 1 }}>
+                              <span>
+                                <IconButton size="small" onClick={() => downloadAttachment(att.uuid, att.name)}>
+                                  <FileDownloadIcon fontSize="inherit" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
                             <Tooltip title="Eliminar archivo">
                               <span>
                                 <IconButton

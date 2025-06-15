@@ -1,5 +1,11 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('NodeAttachment', {
+    uuid: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4,
+      unique: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
