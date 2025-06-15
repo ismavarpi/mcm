@@ -77,7 +77,7 @@ export default function TagList({ modelId, open, onClose }) {
 
   const [save, saving] = useProcessingAction(async () => {
     if (editing) {
-      await axios.put(`/api/tags/${editing.id}`, form);
+      await axios.put(`/api/models/${modelId}/tags/${editing.id}`, form);
     } else {
       await axios.post(`/api/models/${modelId}/tags`, form);
     }
@@ -88,7 +88,7 @@ export default function TagList({ modelId, open, onClose }) {
   });
 
   const [remove, removing] = useProcessingAction(async (id) => {
-    await axios.delete(`/api/tags/${id}`);
+    await axios.delete(`/api/models/${modelId}/tags/${id}`);
     load();
   });
 
