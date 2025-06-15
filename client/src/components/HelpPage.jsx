@@ -9,11 +9,50 @@ export default function HelpPage({ onGoModels, onGoAdmin }) {
 
       <h2 id="inicio">Contenido</h2>
       <ul>
+        <li><a href="#administracion">Administración</a></li>
         <li><a href="#modelos">Modelos</a></li>
         <li><a href="#tags">Etiquetas</a></li>
         <li><a href="#equipos">Equipos y roles</a></li>
+        <li><a href="#categorias">Categorías de documentos</a></li>
         <li><a href="#nodos">Nodos</a></li>
         <li><a href="#importacion">Importación y exportación</a></li>
+      </ul>
+
+      <h2 id="administracion">Administración</h2>
+      <p>
+        Desde la opción <strong>Administrar</strong> de la cabecera acceda a las
+        tablas maestras de la aplicación. Cada listado permite alternar la vista
+        en forma de tarjetas o tabla, ordenar por columnas, filtrar resultados y
+        exportar los datos a CSV o PDF.
+      </p>
+      <p>A continuación se describen las opciones disponibles:</p>
+      <ul>
+        <li>
+          <strong>Modelos</strong>: creación, edición y eliminación de modelos.
+          Desde cada fila se accede a la gestión de sus etiquetas, categorías de
+          documentos, equipos y nodos, así como a la exportación a Jira.
+        </li>
+        <li>
+          <strong>Parámetros</strong>: configuración global. Puede crear,
+          editar o restablecer cada parámetro a su valor por defecto.
+        </li>
+        <li>
+          <strong>Etiquetas</strong>: definición de nombre y colores para
+          clasificar nodos y modelos.
+        </li>
+        <li>
+          <strong>Categorías de documentos</strong>: grupos para organizar los
+          adjuntos de los nodos.
+        </li>
+        <li>
+          <strong>Equipos y roles</strong>: permite dar de alta equipos de
+          trabajo y, dentro de cada uno, sus roles. Incluye la opción de generar
+          automáticamente las líneas RASCI.
+        </li>
+        <li>
+          <strong>Nodos</strong>: edición de la estructura jerárquica del
+          modelo, gestión de adjuntos y responsabilidades RASCI.
+        </li>
       </ul>
 
       <h2 id="modelos">Modelos</h2>
@@ -29,6 +68,9 @@ export default function HelpPage({ onGoModels, onGoAdmin }) {
 
       <h2 id="equipos">Equipos y roles</h2>
       <p>Desde cada modelo se pueden definir equipos de trabajo y sus roles asociados.</p>
+
+      <h2 id="categorias">Categorías de documentos</h2>
+      <p>Permiten organizar los adjuntos de los nodos en grupos personalizables.</p>
 
       <h2 id="nodos">Nodos</h2>
       <p>Los nodos contienen la información jerárquica del modelo. Puede asignarles etiquetas, adjuntar documentos y definir responsabilidades RASCI.</p>
