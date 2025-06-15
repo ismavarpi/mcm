@@ -157,9 +157,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [downloadAttachment] = useProcessingAction(async (uuid, name) => {
     const res = await axios.get(`/api/nodes/attachments/download/${uuid}`, { responseType: 'blob' });
     const url = window.URL.createObjectURL(new Blob([res.data]));
+    const disposition = res.headers['content-disposition'] || '';
+    let filename = name;
+    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    if (match) filename = match[1].replace(/['"]/g, '');
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', name);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
