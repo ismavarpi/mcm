@@ -221,7 +221,9 @@ router.get('/attachments/download/:uuid', async (req, res) => {
   if (!att) return res.status(404).end();
   const file = path.join(__dirname, '..', att.filePath);
   if (!fs.existsSync(file)) return res.status(404).end();
-  res.download(file, att.name);
+  const ext = path.extname(att.filePath);
+  const name = att.name.endsWith(ext) ? att.name : att.name + ext;
+  res.download(file, name);
 });
 
 router.delete('/attachments/:id', async (req, res) => {
