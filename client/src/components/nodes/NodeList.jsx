@@ -120,6 +120,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [tags, setTags] = React.useState([]);
   const [selectedTags, setSelectedTags] = React.useState([]);
   const [filterTags, setFilterTags] = React.useState([]);
+  const [filterTeam, setFilterTeam] = React.useState('');
+  const [filterRole, setFilterRole] = React.useState('');
+  const [filterResp, setFilterResp] = React.useState('');
   const [teams, setTeams] = React.useState([]);
   const [roles, setRoles] = React.useState({});
   const [rasciLines, setRasciLines] = React.useState([]);
@@ -435,14 +438,17 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const visibleIds = React.useMemo(() => {
     const map = Object.fromEntries(nodes.map(n => [n.id, n]));
     const ids = new Set();
-    if (!filter && filterTags.length === 0) {
+    if (!filter && filterTags.length === 0 && !filterTeam && !filterRole && !filterResp) {
       nodes.forEach(n => ids.add(n.id));
       return ids;
     }
     nodes.forEach(n => {
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
       const matchesTags = filterTags.length === 0 || (n.tags && n.tags.some(t => filterTags.includes(t.id)));
-      if (matchesText && matchesTags) {
+      const matchesTeam = !filterTeam || (n.rascis && n.rascis.some(r => r.Role.teamId === filterTeam));
+      const matchesRole = !filterRole || (n.rascis && n.rascis.some(r => r.roleId === filterRole));
+      const matchesResp = !filterResp || (n.rascis && n.rascis.some(r => r.responsibilities.includes(filterResp)));
+      if (matchesText && matchesTags && matchesTeam && matchesRole && matchesResp) {
         let current = n;
         while (current) {
           ids.add(current.id);
@@ -451,7 +457,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       }
     });
     return ids;
-  }, [nodes, filter, filterTags]);
+  }, [nodes, filter, filterTags, filterTeam, filterRole, filterResp]);
 
   const renderTree = (parentId = null) => {
     const children = nodes
@@ -626,8 +632,48 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            <FormControl sx={{ mr: 1, minWidth: 120 }}>
+              <InputLabel>Equipo</InputLabel>
+              <Select
+                label="Equipo"
+                value={filterTeam}
+                onChange={e => { setFilterTeam(e.target.value); setFilterRole(''); }}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {teams.map(team => (
+                  <MenuItem key={team.id} value={team.id}>{team.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ mr: 1, minWidth: 120 }}>
+              <InputLabel>Rol</InputLabel>
+              <Select
+                label="Rol"
+                value={filterRole}
+                onChange={e => setFilterRole(e.target.value)}
+                disabled={!filterTeam}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {(roles[filterTeam] || []).map(r => (
+                  <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ mr: 1, minWidth: 80 }}>
+              <InputLabel>Resp.</InputLabel>
+              <Select
+                label="Resp."
+                value={filterResp}
+                onChange={e => setFilterResp(e.target.value)}
+              >
+                <MenuItem value="">Todas</MenuItem>
+                {['R','A','S','C','I'].map(ch => (
+                  <MenuItem key={ch} value={ch}>{ch}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Tooltip title="Reset">
-              <IconButton onClick={() => { setFilter(''); setFilterTags([]); }}>
+              <IconButton onClick={() => { setFilter(''); setFilterTags([]); setFilterTeam(''); setFilterRole(''); setFilterResp(''); }}>
                 <RestartAltIcon />
               </IconButton>
             </Tooltip>
