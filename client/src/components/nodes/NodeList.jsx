@@ -415,26 +415,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
   };
 
-  const handleTeamFilter = (teamId) => {
-    setShowFilters(true);
-    setFilterTeam(teamId);
-    setFilterRole('');
-    setFilterResp('');
-  };
-
-  const handleRoleFilter = (teamId, roleId) => {
-    setShowFilters(true);
-    setFilterTeam(teamId);
-    setFilterRole(roleId);
-    setFilterResp('');
-  };
-
-  const handleRespFilter = (teamId, roleId, resp) => {
-    setShowFilters(true);
-    setFilterTeam(teamId);
-    setFilterRole(roleId);
-    setFilterResp(resp);
-  };
 
   const [moveNode, moving] = useProcessingAction(async (id, direction) => {
     await axios.post(`/api/nodes/${id}/move`, { direction });
@@ -790,9 +770,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               onRoleClick={handleRoleFilter}
               onRespClick={handleRespFilter}
               onClose={() => setDetailsOpen(false)}
-              onTeamClick={handleTeamFilter}
-              onRoleClick={handleRoleFilter}
-              onRespClick={handleRespFilter}
             />
           </div>
         ) : (
