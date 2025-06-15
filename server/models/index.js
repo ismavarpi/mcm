@@ -72,7 +72,23 @@ async function initDatabase(retries = 5, delayMs = 2000) {
   for (let attempt = 1; ; attempt++) {
     try {
       await sequelize.authenticate();
-      await sequelize.sync({ alter: true });
+
+      const queryInterface = sequelize.getQueryInterface();
+      let table;
+      try {
+        table = await queryInterface.describeTable('node_attachments');
+      } catch (_) {
+        table = null;
+      }
+
+      if (table && !table.uuid) {
+        await queryInterface.addColumn('node_attachments', 'uuid', {
+          type: DataTypes.UUID,
+          allowNull: true,
+          unique: true,
+        });
+      }
+
       await db.Parameter.findOrCreate({
         where: { name: 'Nombre de la aplicación' },
         defaults: { value: 'MCM', defaultValue: 'MCM' }
@@ -94,11 +110,15 @@ async function initDatabase(retries = 5, delayMs = 2000) {
       });
 
       const { v4: uuidv4 } = require('uuid');
-      const atts = await db.NodeAttachment.findAll({ where: { uuid: null } });
-      for (const att of atts) {
-        att.uuid = uuidv4();
-        await att.save();
+      if (table) {
+        const atts = await db.NodeAttachment.findAll({ where: { uuid: null } });
+        for (const att of atts) {
+          att.uuid = uuidv4();
+          await att.save();
+        }
       }
+
+      await sequelize.sync({ alter: true });
       return;
     } catch (err) {
       if (attempt >= retries) throw err;
