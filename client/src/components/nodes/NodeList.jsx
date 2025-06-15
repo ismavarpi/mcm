@@ -49,7 +49,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Editor as DraftEditor, EditorState, convertToRaw, ContentState, RichUtils } from 'draft-js';
+import { Editor as DraftEditor, EditorState, convertToRaw, ContentState, RichUtils, AtomicBlockUtils } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -57,6 +57,7 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import NodeDetails from './NodeDetails';
 
 const rasciStyles = {
@@ -177,6 +178,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [leftWidth, setLeftWidth] = React.useState(40); // percentage
   const containerRef = React.useRef(null);
   const resizing = React.useRef(false);
+  const fileInputRef = React.useRef(null);
   const [editingLeaf, setEditingLeaf] = React.useState(true);
   const handleKeyCommand = (command, state) => {
     const newState = RichUtils.handleKeyCommand(state, command);
@@ -193,6 +195,21 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const toggleBlockType = type => {
     setEditorState(RichUtils.toggleBlockType(editorState, type));
+  };
+
+  const insertImage = async file => {
+    if (!file) return;
+    const width = prompt('Anchura en px', '300');
+    const height = prompt('Altura en px', '200');
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await axios.post('/api/images', fd);
+    const url = res.data.url;
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity('IMAGE', 'IMMUTABLE', { src: url, width, height, alt: '' });
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = AtomicBlockUtils.insertAtomicBlock(editorState, entityKey, ' ');
+    setEditorState(EditorState.forceSelection(newEditorState, newEditorState.getCurrentContent().getSelectionAfter()));
   };
 
   const handleTeamFilter = (teamId) => {
@@ -933,6 +950,18 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                     <FormatListNumberedIcon fontSize="inherit" />
                   </IconButton>
                 </Tooltip>
+                <Tooltip title="Imagen">
+                  <IconButton size="small" onClick={() => fileInputRef.current?.click()}>
+                    <AddPhotoAlternateIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={e => { insertImage(e.target.files[0]); e.target.value = null; }}
+                />
               </div>
               <div style={{ border: '1px solid #ccc', flex: 1, padding: '0.5rem', overflow: 'auto' }}>
                 <DraftEditor
