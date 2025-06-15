@@ -24,6 +24,7 @@ const roleRoutes = require('./routes/roles');
 const categoriaRoutes = require('./routes/categoriaDocumentos');
 const nodeRoutes = require('./routes/nodes');
 const dataRoutes = require('./routes/data');
+const jiraRoutes = require('./routes/jira');
 
 app.use('/api/models', modelRoutes);
 app.use('/api/parameters', parameterRoutes);
@@ -34,5 +35,6 @@ app.use('/api/models/:modelId/categoria-documentos', categoriaRoutes);
 app.use('/api/models/:modelId/nodes', nodeRoutes);
 app.use('/api/nodes', nodeRoutes);
 app.use('/api/data', dataRoutes);
+app.use('/api/jira', jiraRoutes);
 
 module.exports = { app, db };
