@@ -53,8 +53,16 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
+  let finalRasci = rasci;
+  if ((!finalRasci || finalRasci.length === 0) && data.parentId) {
+    const parentLines = await NodeRasci.findAll({ where: { nodeId: data.parentId } });
+    finalRasci = parentLines.map(l => ({
+      roleId: l.roleId,
+      responsibilities: l.responsibilities.split('')
+    }));
+  }
   try {
-    validateRasciLines(rasci);
+    validateRasciLines(finalRasci);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -70,8 +78,8 @@ router.post('/', async (req, res) => {
   const node = await Node.create({ ...data, modelId: req.params.modelId, codePattern });
   await updateNodeAndDescendants(Node, node);
   if (finalTags.length) await node.setTags(finalTags);
-  if (rasci && rasci.length) {
-    for (const line of rasci) {
+  if (finalRasci && finalRasci.length) {
+    for (const line of finalRasci) {
       await NodeRasci.create({ nodeId: node.id, roleId: line.roleId, responsibilities: line.responsibilities.join('') });
     }
   }

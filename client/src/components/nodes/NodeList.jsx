@@ -167,6 +167,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [leftWidth, setLeftWidth] = React.useState(40); // percentage
   const containerRef = React.useRef(null);
   const resizing = React.useRef(false);
+  const [editingLeaf, setEditingLeaf] = React.useState(true);
   const handleKeyCommand = (command, state) => {
     const newState = RichUtils.handleKeyCommand(state, command);
     if (newState) {
@@ -443,6 +444,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const openEdit = async (node) => {
     setEditing(node);
+    setEditingLeaf(!nodes.some(n => n.parentId === node.id));
     setForm({
       parentId: node.parentId || '',
       code: node.code,
@@ -471,14 +473,28 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setDialogOpen(true);
   };
 
-  const openCreate = (parentId = '') => {
+  const openCreate = async (parentId = '') => {
     setEditing(null);
+    setEditingLeaf(true);
     setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '' });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
     setSelectedTags(inherited);
-    setRasciLines([]);
+    if (parentId) {
+      const rasciRes = await axios.get(`/api/nodes/${parentId}/rascis`);
+      const sorted = rasciRes.data.sort((a,b)=>{
+        const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
+        const tb = teams.find(t=>t.id===b.Role.teamId)||{order:0};
+        if(ta.order!==tb.order) return ta.order-tb.order;
+        const ra = roles[ta.id]?.find(r=>r.id===a.roleId)||{order:0};
+        const rb = roles[tb.id]?.find(r=>r.id===b.roleId)||{order:0};
+        return ra.order-rb.order;
+      });
+      setRasciLines(sorted.map(r=>({teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')})));
+    } else {
+      setRasciLines([]);
+    }
     setAttachments([]);
     setAttForm({ categoryId: '', name: '', file: null });
     setTab(0);
@@ -766,6 +782,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <NodeDetails
               node={viewNode}
               attachments={viewAttachments}
+              isLeaf={!nodes.some(n => n.parentId === viewNode.id)}
               onEdit={openEdit}
               onDelete={handleDelete}
               onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
@@ -792,7 +809,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label="Datos del nodo" />
               <Tab label="Descripción" />
-              <Tab label="RASCI" />
+              {editingLeaf && <Tab label="RASCI" />}
               <Tab label="Adjuntos" />
             </Tabs>
             {tab === 0 && (
@@ -942,7 +959,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               </div>
             </div>
             ) }
-            {tab === 2 && (
+            {editingLeaf && tab === 2 && (
             <div>
               <Tooltip title="Añadir RASCI">
                 <IconButton onClick={openRasciAdd} size="small">
@@ -1056,7 +1073,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </DialogActions>
               </Dialog>
             </div>)}
-            {tab === 3 && editing && (
+            {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && editing && (
             <>
               <div style={{ marginTop: '1rem' }}>
                 <TableContainer component={Paper}>
