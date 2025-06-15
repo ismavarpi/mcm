@@ -510,20 +510,24 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const visibleIds = React.useMemo(() => {
     const map = Object.fromEntries(nodes.map(n => [n.id, n]));
+    const parentIds = new Set(nodes.map(n => n.parentId).filter(id => id));
     const ids = new Set();
-    if (!filter && filterTags.length === 0 && !filterTeam && !filterRole && !filterResp) {
+    const rasciFiltering = !!(filterTeam || filterRole || filterResp);
+    if (!filter && filterTags.length === 0 && !rasciFiltering) {
       nodes.forEach(n => ids.add(n.id));
       return ids;
     }
     nodes.forEach(n => {
+      const isLeaf = !parentIds.has(n.id);
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
       const matchesTags = filterTags.length === 0 || (n.tags && n.tags.some(t => filterTags.includes(t.id)));
-      const matchesRasci = (!filterTeam && !filterRole && !filterResp) ||
-        (n.rascis && n.rascis.some(r =>
+      const matchesRasci = !rasciFiltering || (
+        isLeaf && n.rascis && n.rascis.some(r =>
           (!filterTeam || r.Role.teamId === filterTeam) &&
           (!filterRole || r.roleId === filterRole) &&
           (!filterResp || r.responsibilities.includes(filterResp))
-        ));
+        )
+      );
       if (matchesText && matchesTags && matchesRasci) {
         let current = n;
         while (current) {
