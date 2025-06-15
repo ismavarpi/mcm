@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import HomeIcon from '@mui/icons-material/Home';
 import { jsPDF } from 'jspdf';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -19,7 +20,7 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick, isLeaf }) {
+export default function NodeDetails({ node, attachments, path = [], onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick, onPathClick, isLeaf }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -100,6 +101,22 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
           )}
         </div>
       </div>
+      {path.length > 0 && (
+        <div style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          <HomeIcon fontSize="small" sx={{ mr: 0.5 }} />
+          {path.map((p, idx) => (
+            <React.Fragment key={p.id}>
+              <span
+                onClick={onPathClick ? () => onPathClick(p.id) : undefined}
+                style={{ cursor: onPathClick ? 'pointer' : 'default' }}
+              >
+                [{p.code}] {p.name}
+              </span>
+              {idx < path.length - 1 && <span style={{ margin: '0 0.25rem' }}>{'>'}</span>}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
       <div ref={contentRef}>
       {node.tags && node.tags.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
