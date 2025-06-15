@@ -265,11 +265,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Exportar a Jira">
-                        <IconButton onClick={() => openJira(model)}>
-                          <UploadFileIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Exportar a Jira">
+                          <IconButton onClick={() => openJira(model)}>
+                            <UploadFileIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -323,11 +325,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Exportar a Jira">
-                        <IconButton onClick={() => openJira(model)}>
-                          <UploadFileIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Exportar a Jira">
+                          <IconButton onClick={() => openJira(model)}>
+                            <UploadFileIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
