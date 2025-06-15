@@ -789,7 +789,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <NodeDetails
               node={viewNode}
               attachments={viewAttachments}
-              isLeaf={!nodes.some(n => n.parentId === viewNode.id)}
+              isLeaf={viewNode ? !nodes.some(n => n.parentId === viewNode.id) : true}
               onEdit={openEdit}
               onDelete={handleDelete}
               onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
