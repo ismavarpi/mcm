@@ -6,6 +6,7 @@ import Header from './components/Header';
 import ModelList from './components/models/ModelList';
 // Página de administración
 import AdminPage from './components/AdminPage';
+import HelpPage from './components/HelpPage';
 // Cliente HTTP para peticiones a la API
 import axios from 'axios';
 // Contenedor de Material UI para centrar el contenido
@@ -17,6 +18,8 @@ function App() {
   const [showAdmin, setShowAdmin] = React.useState(false);
   // Estado para controlar la vista de modelos públicos
   const [showPublicModels, setShowPublicModels] = React.useState(false);
+  // Estado para mostrar la ayuda
+  const [showHelp, setShowHelp] = React.useState(false);
   // Nombre de la aplicación mostrado en la cabecera
   const [appName, setAppName] = React.useState('MCM');
 
@@ -37,20 +40,27 @@ function App() {
   React.useEffect(() => { loadName(); }, []);
 
   // Cierra cualquier vista abierta
-  const closeAll = () => { setShowAdmin(false); setShowPublicModels(false); };
+  const closeAll = () => { setShowAdmin(false); setShowPublicModels(false); setShowHelp(false); };
 
   return (
     <div>
       {/* Cabecera con opciones para cambiar de vista */}
       <Header appName={appName}
               onModels={() => { closeAll(); setShowPublicModels(true); }}
-              onAdmin={() => { closeAll(); setShowAdmin(true); }} />
+              onAdmin={() => { closeAll(); setShowAdmin(true); }}
+              onHelp={() => { closeAll(); setShowHelp(true); }} />
       {/* Contenedor principal de la página */}
       <Container sx={{ mt: 2 }}>
         {/* Si se activa la vista de modelos públicos los mostramos */}
         {showPublicModels && <ModelList readOnly initialView="cards" enableNodeEdit />}
         {/* Si estamos en la zona de administración se muestra */}
         {showAdmin && <AdminPage />}
+        {showHelp && (
+          <HelpPage
+            onGoModels={() => { closeAll(); setShowPublicModels(true); }}
+            onGoAdmin={() => { closeAll(); setShowAdmin(true); }}
+          />
+        )}
 
       </Container>
     </div>
