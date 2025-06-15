@@ -1124,8 +1124,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 </DialogActions>
               </Dialog>
             </div>)}
-            {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && editing && (
-            <>
+            {((editingLeaf && tab === 3) || (!editingLeaf && tab === 2)) && (
+            <> 
+              {editing ? (
+              <>
               <div style={{ marginTop: '1rem' }}>
                 <TableContainer component={Paper}>
                   <Table size="small">
@@ -1201,6 +1203,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                   Añadir
                 </Button>
               </div>
+              </>
+              ) : (
+                <Typography sx={{ mt: 2 }}>
+                  Guarde el nodo para poder añadir adjuntos.
+                </Typography>
+              )}
             </>
             )}
           </DialogContent>
