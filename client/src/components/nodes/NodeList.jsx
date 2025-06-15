@@ -165,6 +165,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [attachments, setAttachments] = React.useState([]);
   const [viewNode, setViewNode] = React.useState(null);
   const [viewAttachments, setViewAttachments] = React.useState([]);
+  const [viewPath, setViewPath] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
   const [addAttachment, addingAttachment] = useProcessingAction(async () => {
     if (!attForm.file) return;
@@ -261,6 +262,10 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setFilterTeam(teamId);
     setFilterRole(roleId);
     setFilterResp(resp);
+  };
+
+  const handlePathClick = (id) => {
+    setFocusNodeId(id);
   };
 
   React.useEffect(() => {
@@ -420,6 +425,21 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       setViewAttachments([]);
     }
   }, [viewNode]);
+
+  React.useEffect(() => {
+    if (viewNode) {
+      const map = Object.fromEntries(nodes.map(n => [n.id, n]));
+      let current = viewNode;
+      const path = [];
+      while (current) {
+        path.unshift({ id: current.id, code: current.code, name: current.name });
+        current = current.parentId ? map[current.parentId] : null;
+      }
+      setViewPath(path);
+    } else {
+      setViewPath([]);
+    }
+  }, [viewNode, nodes]);
 
   React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
 
@@ -835,6 +855,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             <NodeDetails
               node={viewNode}
               attachments={viewAttachments}
+              path={viewPath}
+              onPathClick={handlePathClick}
               isLeaf={viewNode ? !nodes.some(n => n.parentId === viewNode.id) : true}
               onEdit={openEdit}
               onDelete={handleDelete}
