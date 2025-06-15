@@ -18,7 +18,7 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onTeamClick, onRoleClick, onRespClick, onClose }) {
+export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -112,8 +112,8 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
               <CardContent>
                 <Typography
                   variant="h6"
-                  sx={{ cursor: onTeamClick ? 'pointer' : 'default' }}
                   onClick={onTeamClick ? () => onTeamClick(group.team.id) : undefined}
+                  sx={{ cursor: onTeamClick ? 'pointer' : 'default' }}
                 >
                   {group.team.order} - {group.team.name}
                 </Typography>
@@ -121,7 +121,7 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
                   <div key={line.id} style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
                     <span
                       style={{ flex: 1, cursor: onRoleClick ? 'pointer' : 'default' }}
-                      onClick={onRoleClick ? () => onRoleClick(group.team.id, line.roleId) : undefined}
+                      onClick={onRoleClick ? () => onRoleClick(group.team.id, line.Role.id) : undefined}
                     >
                       {line.Role.name}
                     </span>
@@ -137,7 +137,7 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
                           border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent',
                           cursor: onRespClick ? 'pointer' : 'default'
                         }}
-                        onClick={onRespClick ? () => onRespClick(group.team.id, line.roleId, ch) : undefined}
+                        onClick={onRespClick ? () => onRespClick(group.team.id, line.Role.id, ch) : undefined}
                       >
                         {ch}
                       </span>
