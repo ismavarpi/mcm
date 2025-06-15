@@ -576,11 +576,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
       const matchesTags = filterTags.length === 0 || (n.tags && filterTags.every(tagId => n.tags.some(t => t.id === tagId)));
       const matchesRasci = !rasciFiltering || (
-        isLeaf && n.rascis && n.rascis.some(r =>
-          (!filterTeam || r.Role.teamId === filterTeam) &&
-          (!filterRole || r.roleId === filterRole) &&
-          (!filterResp || r.responsibilities.includes(filterResp))
-        )
+        isLeaf && n.rascis && n.rascis.some(r => {
+          const teamOk = !filterTeam || r.Role.teamId === filterTeam;
+          const roleOk = !filterRole || r.roleId === filterRole;
+          const respOk = !filterResp || r.responsibilities.includes(filterResp);
+          const hasResp = (filterTeam || filterRole)
+            ? r.responsibilities && r.responsibilities.length > 0
+            : true;
+          return teamOk && roleOk && respOk && hasResp;
+        })
       );
       if (matchesText && matchesTags && matchesRasci) {
         let current = n;
