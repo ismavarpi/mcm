@@ -12,7 +12,11 @@ const {
 } = require('../utils/nodeUtils');
 
 const router = express.Router({ mergeParams: true });
-const upload = multer({ dest: path.join(__dirname, '..', 'uploads') });
+const uploadPath = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+const upload = multer({ dest: uploadPath });
 
 function validateRasciLines(rasci) {
   if (!rasci || !rasci.length) return;
@@ -208,6 +212,7 @@ router.get('/attachments/:id/download', async (req, res) => {
   const att = await NodeAttachment.findByPk(req.params.id);
   if (!att) return res.status(404).end();
   const file = path.join(__dirname, '..', att.filePath);
+  if (!fs.existsSync(file)) return res.status(404).end();
   res.download(file, att.name);
 });
 
