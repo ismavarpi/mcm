@@ -5,3 +5,4 @@ Registro esfuerzo:
 13/06/2025 > 3h > correción de errores del primer despliegue hasta conseguir echarlo a andar
 13/06/2025 > 3,5h > incorporando nuevas funcionalidades sobre los nodos
 14/06/2025 > 1,5h > mejoras en la interfaz de nodos del modelo y su edición
+15/06/2025 > 3,5h > mejoras en la gestión de nodos
