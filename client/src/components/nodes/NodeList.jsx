@@ -517,7 +517,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
     nodes.forEach(n => {
       const matchesText = !filter || n.name.toLowerCase().includes(filter.toLowerCase());
-      const matchesTags = filterTags.length === 0 || (n.tags && n.tags.some(t => filterTags.includes(t.id)));
+      const matchesTags = filterTags.length === 0 || (n.tags && filterTags.every(tagId => n.tags.some(t => t.id === tagId)));
       const matchesRasci = (!filterTeam && !filterRole && !filterResp) ||
         (n.rascis && n.rascis.some(r =>
           (!filterTeam || r.Role.teamId === filterTeam) &&
