@@ -77,7 +77,7 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
 
   const [saveRole, saving] = useProcessingAction(async () => {
     if (editing) {
-      await axios.put(`/api/roles/${editing.id}`, form);
+      await axios.put(`/api/teams/${teamId}/roles/${editing.id}`, form);
     } else {
       await axios.post(`/api/teams/${teamId}/roles`, form);
     }
@@ -88,7 +88,7 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
   });
 
   const [removeRole, removing] = useProcessingAction(async (id) => {
-    await axios.delete(`/api/roles/${id}`);
+    await axios.delete(`/api/teams/${teamId}/roles/${id}`);
     load();
   });
 
