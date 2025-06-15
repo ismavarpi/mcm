@@ -393,6 +393,27 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
   };
 
+  const handleTeamFilter = (teamId) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole('');
+    setFilterResp('');
+  };
+
+  const handleRoleFilter = (teamId, roleId) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole(roleId);
+    setFilterResp('');
+  };
+
+  const handleRespFilter = (teamId, roleId, resp) => {
+    setShowFilters(true);
+    setFilterTeam(teamId);
+    setFilterRole(roleId);
+    setFilterResp(resp);
+  };
+
   const [moveNode, moving] = useProcessingAction(async (id, direction) => {
     await axios.post(`/api/nodes/${id}/move`, { direction });
     await load();
@@ -576,7 +597,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         </div>
       </div>
       <div ref={containerRef} style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        <div style={{ width: detailsOpen ? `${leftWidth}%` : '100%', minWidth: 300, padding: '1rem', overflowY: 'auto', borderRight: detailsOpen ? '1px solid #ccc' : 'none' }}>
+        <div style={{ width: detailsOpen ? `${leftWidth}%` : '100%', minWidth: 300, padding: '1rem', overflowY: 'auto', borderRight: detailsOpen ? '1px solid #ccc' : 'none', transition: 'width 0.3s' }}>
           <Tooltip title="Nuevo nodo raíz">
             <IconButton onClick={() => openCreate('')}>
               <AddIcon />
@@ -720,7 +741,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           </div>
         )}
         {detailsOpen ? (
-          <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto' }}>
+          <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto', transition: 'width 0.3s' }}>
             <NodeDetails
               node={viewNode}
               attachments={viewAttachments}
@@ -728,6 +749,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
               onDelete={handleDelete}
               onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
               onClose={() => setDetailsOpen(false)}
+              onTeamClick={handleTeamFilter}
+              onRoleClick={handleRoleFilter}
+              onRespClick={handleRespFilter}
             />
           </div>
         ) : (

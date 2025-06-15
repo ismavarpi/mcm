@@ -18,7 +18,7 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose }) {
+export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -110,10 +110,21 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
           {rasciByTeam.map(group => (
             <Card key={group.team.id} sx={{ mt: 2 }}>
               <CardContent>
-                <Typography variant="h6">{group.team.order} - {group.team.name}</Typography>
+                <Typography
+                  variant="h6"
+                  onClick={onTeamClick ? () => onTeamClick(group.team.id) : undefined}
+                  sx={{ cursor: onTeamClick ? 'pointer' : 'default' }}
+                >
+                  {group.team.order} - {group.team.name}
+                </Typography>
                 {group.lines.map(line => (
                   <div key={line.id} style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
-                    <span style={{ flex: 1 }}>{line.Role.name}</span>
+                    <span
+                      style={{ flex: 1, cursor: onRoleClick ? 'pointer' : 'default' }}
+                      onClick={onRoleClick ? () => onRoleClick(group.team.id, line.Role.id) : undefined}
+                    >
+                      {line.Role.name}
+                    </span>
                     {['R','A','S','C','I'].map(ch => (
                       <span
                         key={ch}
@@ -123,8 +134,10 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
                           backgroundColor: line.responsibilities.includes(ch) ? rasciStyles[ch].bg : 'transparent',
                           color: line.responsibilities.includes(ch) ? 'black' : '#ccc',
                           borderRadius: 4,
-                          border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent'
+                          border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent',
+                          cursor: onRespClick ? 'pointer' : 'default'
                         }}
+                        onClick={onRespClick ? () => onRespClick(group.team.id, line.Role.id, ch) : undefined}
                       >
                         {ch}
                       </span>
