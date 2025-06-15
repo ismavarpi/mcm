@@ -1,5 +1,5 @@
 const express = require('express');
-const { Role } = require('../models');
+const { Role, Team, Node, NodeRasci } = require('../models');
 const router = express.Router({ mergeParams: true });
 
 router.get('/', async (req, res) => {
@@ -9,6 +9,13 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const role = await Role.create({ ...req.body, teamId: req.params.teamId });
+  const team = await Team.findByPk(req.params.teamId);
+  if (team) {
+    const nodes = await Node.findAll({ where: { modelId: team.modelId } });
+    for (const node of nodes) {
+      await NodeRasci.create({ nodeId: node.id, roleId: role.id, responsibilities: '' });
+    }
+  }
   res.json(role);
 });
 

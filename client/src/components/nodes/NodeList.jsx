@@ -314,11 +314,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     return arr;
   }, [rasciLines, teams, roles]);
 
-  const openRasciAdd = () => {
-    setEditingRasciIdx(null);
-    setRasciForm({ teamId: '', roleId: '', responsibilities: [] });
-    setRasciDialogOpen(true);
-  };
 
   const openRasciEdit = (idx) => {
     const line = rasciLines[idx];
@@ -446,11 +441,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [saveNode, saving] = useProcessingAction(async () => {
     const countA = rasciLines.filter(l => l.responsibilities.includes('A')).length;
     const countR = rasciLines.filter(l => l.responsibilities.includes('R')).length;
-    if (rasciLines.length > 0 && (countA === 0 || countR === 0)) {
+    const anySelected = rasciLines.some(l => l.responsibilities.length > 0);
+    if (anySelected && (countA === 0 || countR === 0)) {
       alert('Debe existir al menos un rol con responsabilidad A y otro con responsabilidad R');
       return;
     }
-    if (countA > 1 || countR > 1) {
+    if (anySelected && (countA > 1 || countR > 1)) {
       alert('Solo puede haber un rol con responsabilidad A y uno con responsabilidad R');
       return;
     }
@@ -1056,11 +1052,6 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             ) }
             {editingLeaf && tab === 2 && (
             <div>
-              <Tooltip title="Añadir RASCI">
-                <IconButton onClick={openRasciAdd} size="small">
-                  <AddIcon />
-                </IconButton>
-              </Tooltip>
               {rasciByTeam.map(group => (
                 <Card key={group.team.id} sx={{ mt: 2 }}>
                   <CardContent>
