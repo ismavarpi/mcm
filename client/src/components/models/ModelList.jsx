@@ -38,12 +38,14 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DescriptionIcon from '@mui/icons-material/Description';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { jsPDF } from 'jspdf';
 import TagList from '../tags/TagList';
 import TeamList from '../teams/TeamList';
 import NodeList from '../nodes/NodeList';
 import DocumentCategoryList from '../documentCategories/DocumentCategoryList';
 import useProcessingAction from '../../hooks/useProcessingAction';
+import JiraExport from './JiraExport';
 
 function csvExport(data) {
   const header = 'Nombre;Autor';
@@ -94,6 +96,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
   const [teamsModel, setTeamsModel] = React.useState(null);
   const [nodesModel, setNodesModel] = React.useState(null);
   const [categoriesModel, setCategoriesModel] = React.useState(null);
+  const [jiraModel, setJiraModel] = React.useState(null);
 
   const load = async () => {
     const res = await axios.get('/api/models');
@@ -154,6 +157,9 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
   };
   const openNodes = (model) => {
     setNodesModel(model);
+  };
+  const openJira = (model) => {
+    setJiraModel(model);
   };
 
   const filtered = models.filter(m =>
@@ -259,6 +265,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Exportar a Jira">
+                          <IconButton onClick={() => openJira(model)}>
+                            <UploadFileIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -312,6 +325,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
                           <GroupsIcon />
                         </IconButton>
                       </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title="Exportar a Jira">
+                          <IconButton onClick={() => openJira(model)}>
+                            <UploadFileIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {enableNodeEdit && (
                         <Tooltip title="Nodos">
                           <IconButton onClick={() => openNodes(model)}>
@@ -374,6 +394,9 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
           modelName={nodesModel.name}
           onClose={() => { setNodesModel(null); setView('cards'); }}
         />
+      )}
+      {jiraModel && (
+        <JiraExport open={!!jiraModel} modelId={jiraModel.id} onClose={() => setJiraModel(null)} />
       )}
     </div>
   );

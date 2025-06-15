@@ -77,6 +77,21 @@ async function initDatabase(retries = 5, delayMs = 2000) {
         where: { name: 'Nombre de la aplicación' },
         defaults: { value: 'MCM', defaultValue: 'MCM' }
       });
+      await db.Parameter.findOrCreate({
+        where: { name: 'Jira URL' },
+        defaults: {
+          value: 'https://your-domain.atlassian.net',
+          defaultValue: 'https://your-domain.atlassian.net'
+        }
+      });
+      await db.Parameter.findOrCreate({
+        where: { name: 'Jira usuario' },
+        defaults: { value: 'user@example.com', defaultValue: 'user@example.com' }
+      });
+      await db.Parameter.findOrCreate({
+        where: { name: 'Jira token' },
+        defaults: { value: 'changeme', defaultValue: 'changeme' }
+      });
       return;
     } catch (err) {
       if (attempt >= retries) throw err;
