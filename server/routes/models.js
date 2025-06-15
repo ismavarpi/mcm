@@ -28,6 +28,26 @@ router.delete('/:id', async (req, res) => {
   res.json({});
 });
 
+router.post('/:id/generate-rascis', async (req, res) => {
+  const modelId = req.params.id;
+  const nodes = await Node.findAll({ where: { modelId } });
+  const teams = await Team.findAll({ where: { modelId } });
+  const roles = [];
+  for (const team of teams) {
+    const rs = await Role.findAll({ where: { teamId: team.id } });
+    roles.push(...rs);
+  }
+  for (const node of nodes) {
+    for (const role of roles) {
+      const exists = await NodeRasci.findOne({ where: { nodeId: node.id, roleId: role.id } });
+      if (!exists) {
+        await NodeRasci.create({ nodeId: node.id, roleId: role.id, responsibilities: '' });
+      }
+    }
+  }
+  res.json({});
+});
+
 async function getLeafNodes(modelId) {
   const nodes = await Node.findAll({
     where: { modelId },

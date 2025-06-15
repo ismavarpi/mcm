@@ -105,6 +105,11 @@ export default function TeamList({ modelId, open, onClose }) {
     load();
   });
 
+  const [generateRasci, generatingRasci] = useProcessingAction(async () => {
+    await axios.post(`/api/models/${modelId}/generate-rascis`);
+    load();
+  });
+
   const handleDelete = (id) => {
     if (window.confirm('¿Eliminar elemento?')) {
       removeTeam(id);
@@ -167,6 +172,15 @@ export default function TeamList({ modelId, open, onClose }) {
             <PictureAsPdfIcon />
           </IconButton>
         </Tooltip>
+        <Button
+          variant="outlined"
+          onClick={generateRasci}
+          disabled={generatingRasci}
+          startIcon={<RestartAltIcon />}
+          sx={{ ml: 1 }}
+        >
+          Generar RASCI
+        </Button>
         <Tooltip title="Filtros">
           <IconButton onClick={() => setShowFilters(!showFilters)}>
             <FilterListIcon />
