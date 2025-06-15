@@ -34,7 +34,28 @@ export default function HelpPage({ onGoModels, onGoAdmin }) {
       <p>Los nodos contienen la información jerárquica del modelo. Puede asignarles etiquetas, adjuntar documentos y definir responsabilidades RASCI.</p>
 
       <h2 id="importacion">Importación y exportación</h2>
-      <p>En la sección de administración encontrará utilidades para importar y exportar datos, así como la opción de exportar a Jira.</p>
+      <p>
+        Acceda a estas funciones desde la cabecera pulsando
+        <strong>Administrar</strong> y elija la pestaña
+        <em>Importación/Exportación</em>.
+      </p>
+      <p>
+        Para <strong>exportar</strong> simplemente haga clic en el botón
+        <em>Exportar</em>. Se generará el fichero
+        <code>export.sql</code> y la descarga comenzará de forma
+        automática. Si la operación dura más de un segundo verá en la
+        parte superior el aviso <em>Procesando...</em> con el tiempo
+        transcurrido hasta que finalice.
+      </p>
+      <p>
+        Para <strong>importar</strong> seleccione un archivo
+        <code>.sql</code>. El sistema mostrará la lista de entidades
+        detectadas y podrá marcar o desmarcar las que desee cargar.
+        Pulse <em>Ejecutar importación</em> para iniciar el proceso. Al
+        terminar, aparecerá un registro con el resultado de cada
+        sentencia ejecutada.
+      </p>
+      <p>Desde este apartado también puede lanzar la exportación a Jira.</p>
     </div>
   );
 }
