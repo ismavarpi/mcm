@@ -149,7 +149,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
-  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
+  const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [tags, setTags] = React.useState([]);
@@ -443,6 +443,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       parentId: form.parentId || null,
       codePattern: form.patternType === 'text' ? form.patternText.toUpperCase() : 'ORDER',
       description: form.description,
+      bold: form.bold,
+      underline: form.underline,
       tagIds: selectedTags,
       rasci: rasciLines.map(l => ({ roleId: l.roleId, responsibilities: l.responsibilities }))
     };
@@ -453,7 +455,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       res = await axios.post(`/api/models/${modelId}/nodes`, payload);
     }
     setDialogOpen(false);
-    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '' });
+    setForm({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
     setSelectedTags([]);
     setRasciLines([]);
     setEditing(null);
@@ -488,7 +490,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       name: node.name,
       patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
       patternText: node.codePattern === 'ORDER' ? '' : node.codePattern,
-      description: node.description || ''
+      description: node.description || '',
+      bold: !!node.bold,
+      underline: !!node.underline
     });
     const parent = nodes.find(n => n.id === node.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
@@ -513,7 +517,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const openCreate = async (parentId = '') => {
     setEditing(null);
     setEditingLeaf(true);
-    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '' });
+    setForm({ parentId, code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
     const parent = nodes.find(n => n.id === parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
@@ -580,7 +584,15 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <strong style={{ marginRight: '0.25rem' }}>[{n.code}]</strong>
-              <span style={{ marginRight: '0.5rem' }}>{n.name}</span>
+              <span
+                style={{
+                  marginRight: '0.5rem',
+                  fontWeight: n.bold ? 'bold' : 'normal',
+                  textDecoration: n.underline ? 'underline' : 'none'
+                }}
+              >
+                {n.name}
+              </span>
 
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {n.tags && n.tags.map(tag => (
@@ -955,6 +967,16 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                 ))}
               </Select>
             </FormControl>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <FormControlLabel
+                control={<Checkbox checked={form.bold} onChange={e => setForm({ ...form, bold: e.target.checked })} />}
+                label="Nombre en negrita"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={form.underline} onChange={e => setForm({ ...form, underline: e.target.checked })} />}
+                label="Nombre subrayado"
+              />
+            </div>
             </div>) }
             {tab === 1 && (
             <div style={{ marginTop: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
