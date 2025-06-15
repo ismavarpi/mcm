@@ -68,6 +68,32 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
+// Renderizador para bloques de imagen en el editor WYSIWYG
+function ImageBlock(props) {
+  const entity = props.contentState.getEntity(props.block.getEntityAt(0));
+  if (entity.getType() !== 'IMAGE') return null;
+  const { src, width, height, alt } = entity.getData();
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      style={{ maxWidth: '100%' }}
+    />
+  );
+}
+
+function blockRenderer(block) {
+  if (block.getType() === 'atomic') {
+    return {
+      component: ImageBlock,
+      editable: false
+    };
+  }
+  return null;
+}
+
 function csvExport(data) {
   const header = 'Código;Nombre;Nodo padre;Modelo';
   const rows = data.map(n => `${n.code};${n.name};${n.parentId || ''};${n.modelId}`);
@@ -979,6 +1005,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
                     setForm({ ...form, description: draftToHtml(convertToRaw(state.getCurrentContent())) });
                   }}
                   handleKeyCommand={handleKeyCommand}
+                  blockRendererFn={blockRenderer}
                 />
               </div>
             </div>
