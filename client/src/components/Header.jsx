@@ -5,8 +5,9 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-export default function Header({ appName, onAdmin, onModels }) {
+export default function Header({ appName, onAdmin, onModels, onHelp }) {
   return (
     <AppBar position="static">
       <Toolbar>
@@ -14,6 +15,9 @@ export default function Header({ appName, onAdmin, onModels }) {
           {appName}
         </Typography>
         <MenuItem onClick={onModels}>Modelos</MenuItem>
+        <IconButton color="inherit" onClick={onHelp}>
+          <HelpOutlineIcon />
+        </IconButton>
         <IconButton color="inherit" onClick={onAdmin}>
           <SettingsIcon />
         </IconButton>
