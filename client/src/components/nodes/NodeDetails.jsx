@@ -10,6 +10,14 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 
+const rasciStyles = {
+  R: { bg: '#ffcc80', border: '#ffa726' },
+  A: { bg: '#ef9a9a', border: '#e57373' },
+  S: { bg: '#fff59d', border: '#fff176' },
+  C: { bg: '#c8e6c9', border: '#a5d6a7' },
+  I: { bg: '#bbdefb', border: '#90caf9' }
+};
+
 export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
@@ -112,10 +120,10 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
                         style={{
                           marginRight: '0.25rem',
                           padding: '0.25rem 0.5rem',
-                          backgroundColor: line.responsibilities.includes(ch) ? '#c8e6c9' : 'transparent',
+                          backgroundColor: line.responsibilities.includes(ch) ? rasciStyles[ch].bg : 'transparent',
                           color: line.responsibilities.includes(ch) ? 'black' : '#ccc',
                           borderRadius: 4,
-                          border: line.responsibilities.includes(ch) ? '1px solid #a5d6a7' : '1px solid transparent'
+                          border: line.responsibilities.includes(ch) ? `1px solid ${rasciStyles[ch].border}` : '1px solid transparent'
                         }}
                       >
                         {ch}
