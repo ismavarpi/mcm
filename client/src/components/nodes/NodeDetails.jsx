@@ -18,7 +18,7 @@ const rasciStyles = {
   I: { bg: '#bbdefb', border: '#90caf9' }
 };
 
-export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick }) {
+export default function NodeDetails({ node, attachments, onEdit, onDelete, onTagClick, onClose, onTeamClick, onRoleClick, onRespClick, isLeaf }) {
   if (!node) {
     return <div>Selecciona un nodo</div>;
   }
@@ -104,7 +104,7 @@ export default function NodeDetails({ node, attachments, onEdit, onDelete, onTag
         </div>
       )}
       <div dangerouslySetInnerHTML={{ __html: node.description }} />
-      {rasciByTeam.length > 0 && (
+      {isLeaf && rasciByTeam.length > 0 && (
         <div style={{ marginTop: '1rem' }}>
           <h3>RASCI</h3>
           {rasciByTeam.map(group => (
