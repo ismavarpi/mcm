@@ -5,7 +5,11 @@ const multer = require('multer');
 const db = require('../models');
 
 const router = express.Router();
-const upload = multer({ dest: path.join(__dirname, '..', 'uploads', 'tmp') });
+const tmpUpload = path.join(__dirname, '..', 'uploads', 'tmp');
+if (!fs.existsSync(tmpUpload)) {
+  fs.mkdirSync(tmpUpload, { recursive: true });
+}
+const upload = multer({ dest: tmpUpload });
 
 const exportOrder = [
   'Parameter',
