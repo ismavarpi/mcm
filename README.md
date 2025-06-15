@@ -99,6 +99,15 @@ Con estos pasos la aplicación queda desplegada y lista para usarse.
 
 ## Importación y exportación de datos
 
-Desde la sección de administración se puede descargar un volcado SQL de todos los registros pulsando en **Exportar**. El fichero generado contiene sentencias `INSERT` con actualización automática si el registro ya existe.
+Para utilizar estas herramientas acceda a **Administrar** desde la cabecera y seleccione la pestaña *Importación/Exportación*.
 
-Para importar, seleccione un fichero `.sql` y elija qué entidades cargar. Tras ejecutar la importación se mostrará un log con el resultado de cada sentencia.
+### Exportar
+1. Pulse **Exportar** para generar el fichero `export.sql` con todas las entidades. Si la operación tarda más de un segundo aparecerá el aviso *Procesando...* hasta que finalice.
+2. Cuando termine, el navegador iniciará la descarga del fichero automáticamente.
+
+### Importar
+1. Seleccione un archivo `.sql`. La aplicación analizará su contenido y mostrará la lista de entidades detectadas, todas marcadas por defecto.
+2. Puede desmarcar las que no desee cargar y pulsar **Ejecutar importación**. Mientras se ejecuta verá el aviso *Procesando...*.
+3. Al finalizar se mostrará un registro con el resultado de cada sentencia ejecutada.
+
+El fichero exportado contiene sentencias `INSERT` que actualizan registros existentes mediante `ON DUPLICATE KEY UPDATE`.
