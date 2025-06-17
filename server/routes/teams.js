@@ -1,5 +1,5 @@
 const express = require('express');
-const { Team } = require('../models');
+const { Team, Role, NodeRasci } = require('../models');
 const router = express.Router({ mergeParams: true });
 
 router.get('/', async (req, res) => {
@@ -18,8 +18,32 @@ router.put('/:id', async (req, res) => {
   res.json(team);
 });
 
+router.get('/:id/delete-info', async (req, res) => {
+  const team = await Team.findByPk(req.params.id);
+  if (!team) return res.status(404).json({});
+  const roles = await Role.findAll({ where: { teamId: team.id } });
+  const roleIds = roles.map(r => r.id);
+  const rasciCount = roleIds.length
+    ? await NodeRasci.count({ where: { roleId: roleIds } })
+    : 0;
+  res.json({
+    team: { id: team.id, name: team.name },
+    roles: roles.map(r => ({ id: r.id, name: r.name })),
+    rasciCount
+  });
+});
+
 router.delete('/:id', async (req, res) => {
-  await Team.destroy({ where: { id: req.params.id } });
+  const team = await Team.findByPk(req.params.id);
+  if (team) {
+    const roles = await Role.findAll({ where: { teamId: team.id } });
+    const roleIds = roles.map(r => r.id);
+    if (roleIds.length) {
+      await NodeRasci.destroy({ where: { roleId: roleIds } });
+      await Role.destroy({ where: { id: roleIds } });
+    }
+    await team.destroy();
+  }
   res.json({});
 });
 

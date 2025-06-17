@@ -56,7 +56,8 @@ export default function NodeDetails({ node, attachments, path = [], onEdit, onDe
     if (!node.rascis) return [];
     const map = {};
     node.rascis.forEach(r => {
-      const team = r.Role.Team;
+      const team = r.Role?.Team;
+      if (!team) return;
       if (!map[team.id]) map[team.id] = { team, lines: [] };
       map[team.id].lines.push(r);
     });

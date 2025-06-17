@@ -8,5 +8,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    teamId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
 };

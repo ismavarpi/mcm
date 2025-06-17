@@ -25,8 +25,19 @@ router.put('/:id', async (req, res) => {
   res.json(role);
 });
 
+router.get('/:id/delete-info', async (req, res) => {
+  const role = await Role.findByPk(req.params.id);
+  if (!role) return res.status(404).json({});
+  const rasciCount = await NodeRasci.count({ where: { roleId: role.id } });
+  res.json({ role: { id: role.id, name: role.name }, rasciCount });
+});
+
 router.delete('/:id', async (req, res) => {
-  await Role.destroy({ where: { id: req.params.id } });
+  const role = await Role.findByPk(req.params.id);
+  if (role) {
+    await NodeRasci.destroy({ where: { roleId: role.id } });
+    await role.destroy();
+  }
   res.json({});
 });
 
