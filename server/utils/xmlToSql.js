@@ -21,7 +21,7 @@ function buildInserts(entity, rows) {
   if (!rows.length) return '';
   const cols = Object.keys(rows[0]).filter(c => c !== 'id');
   const colList = cols.map(c => `\`${c}\``).join(', ');
-  let sql = `-- ${entity}\n`;
+  let sql = `-- Entity: ${entity}\n`;
   for (const row of rows) {
     const vals = cols.map(c => row[c] === null ? 'NULL' : JSON.stringify(row[c])).join(', ');
     sql += `INSERT INTO \`${entity}\` (id, ${colList}) VALUES (${row.id}, ${vals});\n`;
