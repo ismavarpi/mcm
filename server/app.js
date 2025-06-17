@@ -5,10 +5,18 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const db = require('./models');
+const session = require('express-session');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+if (process.env.USE_AUTH && process.env.USE_AUTH !== 'false') {
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'mcm-secret',
+    resave: false,
+    saveUninitialized: false
+  }));
+}
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -26,7 +34,16 @@ const nodeRoutes = require('./routes/nodes');
 const dataRoutes = require('./routes/data');
 const jiraRoutes = require('./routes/jira');
 const imageRoutes = require('./routes/images');
+const authRoutes = require('./routes/auth');
 
+if (process.env.USE_AUTH && process.env.USE_AUTH !== 'false') {
+  app.use('/api/auth', authRoutes);
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/auth')) return next();
+    if (req.session && req.session.user) return next();
+    res.status(401).json({ error: 'Unauthorized' });
+  });
+}
 app.use('/api/models', modelRoutes);
 app.use('/api/parameters', parameterRoutes);
 app.use('/api/models/:modelId/tags', tagRoutes);
