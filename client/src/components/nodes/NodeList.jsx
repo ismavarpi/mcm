@@ -59,7 +59,7 @@ import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import NodeDetails from './NodeDetails';
+const NodeDetails = React.lazy(() => import('./NodeDetails'));
 
 const rasciStyles = {
   R: { bg: '#ffcc80', border: '#ffa726' },
@@ -166,6 +166,8 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   const [attachments, setAttachments] = React.useState([]);
   const [viewNode, setViewNode] = React.useState(null);
   const [viewAttachments, setViewAttachments] = React.useState([]);
+  const attachmentCache = React.useRef({});
+  const rasciCache = React.useRef({});
   const [viewPath, setViewPath] = React.useState([]);
   const [attForm, setAttForm] = React.useState({ categoryId: '', name: '', file: null });
   const [addAttachment, addingAttachment] = useProcessingAction(async () => {
@@ -176,10 +178,12 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     fd.append('categoryId', attForm.categoryId);
     await axios.post(`/api/nodes/${editing.id}/attachments`, fd);
     setAttForm({ categoryId: '', name: '', file: null });
+    if (attachmentCache.current[editing.id]) delete attachmentCache.current[editing.id];
     loadAttachments(editing.id);
   });
   const [removeAttachment, removingAttachment] = useProcessingAction(async (id) => {
     await axios.delete(`/api/nodes/attachments/${id}`);
+    if (attachmentCache.current[editing.id]) delete attachmentCache.current[editing.id];
     loadAttachments(editing.id);
   });
   const [downloadAttachment] = useProcessingAction(async (uuid, name) => {
@@ -363,18 +367,14 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   }, [nodes]);
 
   const load = async () => {
-    const [nodesRes, tagsRes, teamsRes] = await Promise.all([
+    const [nodesRes, tagsRes, teamsRes, rolesRes] = await Promise.all([
       axios.get(`/api/models/${modelId}/nodes`),
       axios.get(`/api/models/${modelId}/tags`),
-      axios.get(`/api/models/${modelId}/teams`)
+      axios.get(`/api/models/${modelId}/teams`),
+      axios.get(`/api/models/${modelId}/roles`)
     ]);
     const rolesMap = {};
-    await Promise.all(
-      teamsRes.data.map(async t => {
-        const r = await axios.get(`/api/teams/${t.id}/roles`);
-        rolesMap[t.id] = r.data;
-      })
-    );
+    rolesRes.data.forEach(group => { rolesMap[group.teamId] = group.roles; });
     setTeams(teamsRes.data);
     setRoles(rolesMap);
     setNodes(nodesRes.data);
@@ -408,12 +408,22 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   };
 
   const loadAttachments = async (id) => {
+    if (attachmentCache.current[id]) {
+      setAttachments(attachmentCache.current[id]);
+      return;
+    }
     const res = await axios.get(`/api/nodes/${id}/attachments`);
+    attachmentCache.current[id] = res.data;
     setAttachments(res.data);
   };
 
   const loadViewAttachments = async (id) => {
+    if (attachmentCache.current[id]) {
+      setViewAttachments(attachmentCache.current[id]);
+      return;
+    }
     const res = await axios.get(`/api/nodes/${id}/attachments`);
+    attachmentCache.current[id] = res.data;
     setViewAttachments(res.data);
   };
 
@@ -519,8 +529,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setInheritedTags(inherited);
     const nodeTagIds = node.tags ? node.tags.map(t => t.id) : [];
     setSelectedTags(Array.from(new Set([...nodeTagIds, ...inherited])));
-    const rasciRes = await axios.get(`/api/nodes/${node.id}/rascis`);
-    const sorted = rasciRes.data.sort((a,b)=>{
+    let rasciData = rasciCache.current[node.id];
+    if (!rasciData) {
+      const rasciRes = await axios.get(`/api/nodes/${node.id}/rascis`);
+      rasciData = rasciRes.data;
+      rasciCache.current[node.id] = rasciData;
+    }
+    const sorted = rasciData.sort((a,b)=>{
       const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
       const tb = teams.find(t=>t.id===b.Role.teamId)||{order:0};
       if(ta.order!==tb.order) return ta.order-tb.order;
@@ -543,8 +558,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setInheritedTags(inherited);
     setSelectedTags(inherited);
     if (parentId) {
-      const rasciRes = await axios.get(`/api/nodes/${parentId}/rascis`);
-      const sorted = rasciRes.data.sort((a,b)=>{
+      let rasciData = rasciCache.current[parentId];
+      if (!rasciData) {
+        const rasciRes = await axios.get(`/api/nodes/${parentId}/rascis`);
+        rasciData = rasciRes.data;
+        rasciCache.current[parentId] = rasciData;
+      }
+      const sorted = rasciData.sort((a,b)=>{
         const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
         const tb = teams.find(t=>t.id===b.Role.teamId)||{order:0};
         if(ta.order!==tb.order) return ta.order-tb.order;
@@ -856,20 +876,22 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         )}
         {detailsOpen ? (
           <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto', transition: 'width 0.3s' }}>
-            <NodeDetails
-              node={viewNode}
-              attachments={viewAttachments}
-              path={viewPath}
-              onPathClick={handlePathClick}
-              isLeaf={viewNode ? !nodes.some(n => n.parentId === viewNode.id) : true}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-              onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
-              onTeamClick={handleTeamFilter}
-              onRoleClick={handleRoleFilter}
-              onRespClick={handleRespFilter}
-              onClose={() => setDetailsOpen(false)}
-            />
+            <React.Suspense fallback={<div>Cargando...</div>}>
+              <NodeDetails
+                node={viewNode}
+                attachments={viewAttachments}
+                path={viewPath}
+                onPathClick={handlePathClick}
+                isLeaf={viewNode ? !nodes.some(n => n.parentId === viewNode.id) : true}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                onTagClick={(id) => { setShowFilters(true); setFilterTags([id]); }}
+                onTeamClick={handleTeamFilter}
+                onRoleClick={handleRoleFilter}
+                onRespClick={handleRespFilter}
+                onClose={() => setDetailsOpen(false)}
+              />
+            </React.Suspense>
           </div>
         ) : (
           <div style={{ position: 'absolute', top: 0, right: 0 }}>

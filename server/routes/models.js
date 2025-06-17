@@ -114,4 +114,14 @@ router.post('/:id/jira-api', async (req, res) => {
   res.json({ log: logs });
 });
 
+router.get('/:id/roles', async (req, res) => {
+  const teams = await Team.findAll({ where: { modelId: req.params.id } });
+  const result = [];
+  for (const team of teams) {
+    const roles = await Role.findAll({ where: { teamId: team.id } });
+    result.push({ teamId: team.id, roles });
+  }
+  res.json(result);
+});
+
 module.exports = router;
