@@ -3,11 +3,20 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { useAuth } from '../hooks/useAuth';
 
-export default function Header({ appName, onAdmin, onModels, onHelp }) {
+export default function Header({ appName, onAdmin, onModels, onHelp, onLogin }) {
+  const { user, requiresAuth, logout } = useAuth();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleMenu = event => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -21,6 +30,23 @@ export default function Header({ appName, onAdmin, onModels, onHelp }) {
         <IconButton color="inherit" onClick={onAdmin}>
           <SettingsIcon />
         </IconButton>
+        {requiresAuth && (
+          <>
+            <IconButton color="inherit" onClick={handleMenu}>
+              <AccountCircleIcon />
+            </IconButton>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+              {user ? (
+                <MenuItem disabled>{user.username}</MenuItem>
+              ) : (
+                <MenuItem onClick={() => { handleClose(); onLogin(); }}>Login</MenuItem>
+              )}
+              {user && (
+                <MenuItem onClick={() => { handleClose(); logout(); }}>Logout</MenuItem>
+              )}
+            </Menu>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );

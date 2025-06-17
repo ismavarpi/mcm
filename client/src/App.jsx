@@ -7,6 +7,8 @@ import ModelList from './components/models/ModelList';
 // Página de administración
 import AdminPage from './components/AdminPage';
 import HelpPage from './components/HelpPage';
+import LoginPage from './components/LoginPage';
+import { useAuth } from './hooks/useAuth';
 // Cliente HTTP para peticiones a la API
 import axios from 'axios';
 // Contenedor de Material UI para centrar el contenido
@@ -14,6 +16,8 @@ import Container from '@mui/material/Container';
 
 // Componente principal de la aplicación
 function App() {
+  const { user, requiresAuth } = useAuth();
+  const [forceLogin, setForceLogin] = React.useState(false);
   // Estado para mostrar u ocultar la página de administración
   const [showAdmin, setShowAdmin] = React.useState(false);
   // Estado para controlar la vista de modelos públicos
@@ -38,9 +42,14 @@ function App() {
 
   // Cargamos el nombre la primera vez que se monta el componente
   React.useEffect(() => { loadName(); }, []);
+  React.useEffect(() => { if (user) setForceLogin(false); }, [user]);
 
   // Cierra cualquier vista abierta
   const closeAll = () => { setShowAdmin(false); setShowPublicModels(false); setShowHelp(false); };
+
+  if ((requiresAuth && !user) || forceLogin) {
+    return <LoginPage />;
+  }
 
   return (
     <div>
@@ -48,7 +57,8 @@ function App() {
       <Header appName={appName}
               onModels={() => { closeAll(); setShowPublicModels(true); }}
               onAdmin={() => { closeAll(); setShowAdmin(true); }}
-              onHelp={() => { closeAll(); setShowHelp(true); }} />
+              onHelp={() => { closeAll(); setShowHelp(true); }}
+              onLogin={() => setForceLogin(true)} />
       {/* Contenedor principal de la página */}
       <Container sx={{ mt: 2 }}>
         {/* Si se activa la vista de modelos públicos los mostramos */}
