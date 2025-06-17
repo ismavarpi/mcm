@@ -54,6 +54,16 @@ router.get('/', async (req, res) => {
   res.json(nodes);
 });
 
+router.get('/tree', async (req, res) => {
+  const nodes = await Node.findAll({
+    where: { modelId: req.params.modelId },
+    attributes: ['id', 'parentId', 'order', 'code', 'name', 'bold', 'underline'],
+    include: [{ model: Tag, as: 'tags' }],
+    order: [['parentId', 'ASC'], ['order', 'ASC']]
+  });
+  res.json(nodes);
+});
+
 router.post('/', async (req, res) => {
   const { tagIds = [], rasci, codePattern = 'ORDER', ...data } = req.body;
   let finalRasci = rasci;
@@ -222,6 +232,17 @@ router.get('/:nodeId/attachments', async (req, res) => {
     include: { model: CategoriaDocumento }
   });
   res.json(attachments);
+});
+
+router.get('/:id', async (req, res) => {
+  const node = await Node.findByPk(req.params.id, {
+    include: [
+      { model: Tag, as: 'tags' },
+      { model: NodeRasci, as: 'rascis', include: { model: Role, include: Team } }
+    ]
+  });
+  if (!node) return res.status(404).json({});
+  res.json(node);
 });
 
 router.post('/:nodeId/attachments', upload.single('file'), async (req, res) => {
