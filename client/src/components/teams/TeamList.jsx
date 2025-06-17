@@ -90,7 +90,7 @@ export default function TeamList({ modelId, open, onClose }) {
 
   const [saveTeam, saving] = useProcessingAction(async () => {
     if (editing) {
-      await axios.put(`/api/teams/${editing.id}`, form);
+      await axios.put(`/api/models/${modelId}/teams/${editing.id}`, form);
     } else {
       await axios.post(`/api/models/${modelId}/teams`, form);
     }
@@ -101,7 +101,7 @@ export default function TeamList({ modelId, open, onClose }) {
   });
 
   const [removeTeam, removing] = useProcessingAction(async (id) => {
-    await axios.delete(`/api/teams/${id}`);
+    await axios.delete(`/api/models/${modelId}/teams/${id}`);
     load();
   });
 
@@ -110,9 +110,16 @@ export default function TeamList({ modelId, open, onClose }) {
     load();
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Eliminar elemento?')) {
-      removeTeam(id);
+  const handleDelete = async (id) => {
+    try {
+      const res = await axios.get(`/api/models/${modelId}/teams/${id}/delete-info`);
+      const { roles, rasciCount } = res.data;
+      const msg = `Se eliminarán ${roles.length} roles y ${rasciCount} líneas RASCI. ¿Continuar?`;
+      if (window.confirm(msg)) {
+        removeTeam(id);
+      }
+    } catch {
+      if (window.confirm('¿Eliminar elemento?')) removeTeam(id);
     }
   };
 

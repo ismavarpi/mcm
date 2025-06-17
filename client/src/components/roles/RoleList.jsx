@@ -92,9 +92,16 @@ export default function RoleList({ teamId, teamName, open, onClose }) {
     load();
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Eliminar elemento?')) {
-      removeRole(id);
+  const handleDelete = async (id) => {
+    try {
+      const res = await axios.get(`/api/teams/${teamId}/roles/${id}/delete-info`);
+      const { rasciCount } = res.data;
+      const msg = `Se eliminarán ${rasciCount} líneas RASCI. ¿Continuar?`;
+      if (window.confirm(msg)) {
+        removeRole(id);
+      }
+    } catch {
+      if (window.confirm('¿Eliminar elemento?')) removeRole(id);
     }
   };
 

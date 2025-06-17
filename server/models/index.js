@@ -118,6 +118,15 @@ async function initDatabase(retries = 5, delayMs = 2000) {
         }
       }
 
+      // Clean rasci lines with missing references before enforcing constraints
+      const { Op } = require('sequelize');
+      await db.NodeRasci.destroy({ where: { [Op.or]: [{ roleId: null }, { nodeId: null }] } });
+      const validRoles = await db.Role.findAll({ attributes: ['id'] });
+      const roleIds = validRoles.map(r => r.id);
+      if (roleIds.length) {
+        await db.NodeRasci.destroy({ where: { roleId: { [Op.notIn]: roleIds } } });
+      }
+
       await sequelize.sync({ alter: true });
       return;
     } catch (err) {
