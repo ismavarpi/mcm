@@ -36,6 +36,8 @@ async function main() {
   const output = process.argv[3] || path.join(__dirname, '..', '..', 'export', 'import.sql');
   const actividades = await parseFile(input);
 
+  const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
   await db.sequelize.authenticate();
   const startModelId = (await db.Model.max('id')) || 0;
   const startTeamId = (await db.Team.max('id')) || 0;
@@ -78,6 +80,8 @@ async function main() {
         underline: false,
         modelId,
         parentId: parent ? parent.id : null,
+        createdAt: timestamp,
+        updatedAt: timestamp,
 
       };
       nodes.set(key, node);
@@ -102,7 +106,7 @@ async function main() {
       let team = teams.get(teamName);
       if (!team) {
         const id = teamId++;
-        team = { id, name: teamName, order: teams.size + 1, modelId };
+        team = { id, name: teamName, order: teams.size + 1, modelId, createdAt: timestamp, updatedAt: timestamp };
         teams.set(teamName, team);
       }
       const roleKey = `${teamName}_${roleName}`;
@@ -110,14 +114,14 @@ async function main() {
       if (!role) {
         const count = Array.from(roles.values()).filter(ro => ro.teamId === team.id).length;
         const id = roleId++;
-        role = { id, name: roleName, order: count + 1, teamId: team.id };
+        role = { id, name: roleName, order: count + 1, teamId: team.id, createdAt: timestamp, updatedAt: timestamp };
         roles.set(roleKey, role);
       }
-      rascis.push({ id: rasciId++, nodeId: node.id, roleId: role.id, responsibilities: resp || '' });
+      rascis.push({ id: rasciId++, nodeId: node.id, roleId: role.id, responsibilities: resp || '', createdAt: timestamp, updatedAt: timestamp });
     }
   }
 
-  const model = { id: modelId, name: 'Modelo importado', author: 'import', parentId: null };
+  const model = { id: modelId, name: 'Modelo importado', author: 'import', parentId: null, createdAt: timestamp, updatedAt: timestamp };
 
   let sql = '';
   sql += buildInserts('Models', [model]);
