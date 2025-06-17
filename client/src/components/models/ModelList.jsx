@@ -39,6 +39,8 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DescriptionIcon from '@mui/icons-material/Description';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import LockIcon from '@mui/icons-material/Lock';
+import PublicIcon from '@mui/icons-material/Public';
 import { jsPDF } from 'jspdf';
 import TagList from '../tags/TagList';
 import TeamList from '../teams/TeamList';
@@ -48,8 +50,8 @@ import useProcessingAction from '../../hooks/useProcessingAction';
 import JiraExport from './JiraExport';
 
 function csvExport(data) {
-  const header = 'Nombre;Autor';
-  const rows = data.map(m => `${m.name};${m.author}`);
+  const header = 'Nombre;Autor;Publico';
+  const rows = data.map(m => `${m.name};${m.author};${m.isPublic ? 'Si' : 'No'}`);
   const csvContent = [header, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -66,7 +68,8 @@ function pdfExport(data) {
   doc.text('Modelos', 10, 10);
   let y = 20;
   data.forEach(m => {
-    doc.text(`${m.name} - ${m.author}`, 10, y);
+    const vis = m.isPublic ? 'Público' : 'Privado';
+    doc.text(`${m.name} - ${m.author} - ${vis}`, 10, y);
     y += 10;
   });
   doc.save('modelos.pdf');
@@ -88,7 +91,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
   const [open, setOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [view, setView] = React.useState(initialView);
-  const [form, setForm] = React.useState({ name: '', author: '', parentId: '' });
+  const [form, setForm] = React.useState({ name: '', author: '', parentId: '', isPublic: false });
   const [showFilters, setShowFilters] = React.useState(false);
   const [filter, setFilter] = React.useState('');
   const [sort, setSort] = React.useState({ key: 'name', dir: 'asc' });
@@ -116,7 +119,7 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
       await axios.post('/api/models', { ...form, parentId: form.parentId || null });
     }
     setOpen(false);
-    setForm({ name: '', author: '', parentId: '' });
+    setForm({ name: '', author: '', parentId: '', isPublic: false });
     setEditing(null);
     load();
   });
@@ -134,13 +137,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
 
   const openEdit = (model) => {
     setEditing(model);
-    setForm({ name: model.name, author: model.author, parentId: model.parentId || '' });
+    setForm({ name: model.name, author: model.author, parentId: model.parentId || '', isPublic: model.isPublic });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', author: '', parentId: '' });
+    setForm({ name: '', author: '', parentId: '', isPublic: false });
     setOpen(true);
   };
 
@@ -297,8 +300,13 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
         <Grid container spacing={2}>
           {sorted.map((model) => (
             <Grid item xs={12} md={4} key={model.id}>
-              <Card>
+              <Card style={{ position: 'relative' }}>
                 <CardContent>
+                  {model.isPublic ? (
+                    <PublicIcon style={{ position: 'absolute', top: 8, right: 8 }} />
+                  ) : (
+                    <LockIcon style={{ position: 'absolute', top: 8, right: 8 }} />
+                  )}
                   <Typography variant="h6">{getBreadcrumb(model, models)}</Typography>
                   <Typography>{model.author}</Typography>
                   {(!readOnly || enableNodeEdit) && (
@@ -370,6 +378,17 @@ export default function ModelList({ readOnly = false, initialView = 'table', ena
               {models.filter(m => !editing || m.id !== editing.id).map(m => (
                 <MenuItem key={m.id} value={m.id}>{getBreadcrumb(m, models)}</MenuItem>
               ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Visibilidad</InputLabel>
+            <Select
+              label="Visibilidad"
+              value={form.isPublic ? 'publico' : 'privado'}
+              onChange={e => setForm({ ...form, isPublic: e.target.value === 'publico' })}
+            >
+              <MenuItem value="publico">Público</MenuItem>
+              <MenuItem value="privado">Privado</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
