@@ -50,6 +50,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import { Editor as DraftEditor, EditorState, convertToRaw, ContentState, RichUtils, AtomicBlockUtils } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
@@ -148,6 +149,7 @@ function pdfExport(data) {
 
 export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
@@ -367,6 +369,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   }, [nodes]);
 
   const load = async () => {
+    setLoading(true);
     const [nodesRes, tagsRes, teamsRes, rolesRes] = await Promise.all([
       axios.get(`/api/models/${modelId}/nodes/tree`),
       axios.get(`/api/models/${modelId}/tags`),
@@ -380,6 +383,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setNodes(nodesRes.data);
     setExpanded(nodesRes.data.map(n => String(n.id)));
     setTags(tagsRes.data);
+    setLoading(false);
   };
 
   React.useEffect(() => {
@@ -849,30 +853,38 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </Tooltip>
           </div>
         )}
-        <TreeView
-          slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
-          expandedItems={expanded}
-          onExpandedItemsChange={(e, ids) => {
-            setExpanded(ids);
-            setAllExpanded(ids.length === nodes.length);
-          }}
-          selectedItems={selected}
-          onSelectedItemsChange={async (e, ids) => {
-            const idStr = Array.isArray(ids) ? ids[0] : ids;
-            setSelected(idStr);
-            const id = parseInt(idStr, 10);
-            try {
-              const res = await axios.get(`/api/nodes/${id}`);
-              setViewNode(res.data);
-              if (!detailsOpen) setDetailsOpen(true);
-            } catch {
-              setViewNode(null);
-            }
-          }}
-          expansionTrigger="iconContainer"
-        >
-          {renderTree(null)}
-        </TreeView>
+        {loading ? (
+          <div>
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <Skeleton key={idx} variant="text" height={30} sx={{ mb: 0.5 }} />
+            ))}
+          </div>
+        ) : (
+          <TreeView
+            slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
+            expandedItems={expanded}
+            onExpandedItemsChange={(e, ids) => {
+              setExpanded(ids);
+              setAllExpanded(ids.length === nodes.length);
+            }}
+            selectedItems={selected}
+            onSelectedItemsChange={async (e, ids) => {
+              const idStr = Array.isArray(ids) ? ids[0] : ids;
+              setSelected(idStr);
+              const id = parseInt(idStr, 10);
+              try {
+                const res = await axios.get(`/api/nodes/${id}`);
+                setViewNode(res.data);
+                if (!detailsOpen) setDetailsOpen(true);
+              } catch {
+                setViewNode(null);
+              }
+            }}
+            expansionTrigger="iconContainer"
+          >
+            {renderTree(null)}
+          </TreeView>
+        )}
         </div>
         {detailsOpen && (
           <div
@@ -884,7 +896,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
         )}
         {detailsOpen ? (
           <div style={{ width: `${100 - leftWidth}%`, padding: '1rem', overflowY: 'auto', transition: 'width 0.3s' }}>
-            <React.Suspense fallback={<div>Cargando...</div>}>
+            <React.Suspense fallback={<Skeleton variant="rectangular" width="100%" height={400} />}>
               <NodeDetails
                 node={viewNode}
                 attachments={viewAttachments}
