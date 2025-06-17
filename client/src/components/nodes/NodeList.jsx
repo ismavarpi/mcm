@@ -38,6 +38,7 @@ import { SimpleTreeView as TreeView } from '@mui/x-tree-view';
 import { TreeItem } from '@mui/x-tree-view';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Skeleton from '@mui/material/Skeleton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import Tabs from '@mui/material/Tabs';
@@ -148,6 +149,7 @@ function pdfExport(data) {
 
 export default function NodeList({ modelId, modelName, open, onClose }) {
   const [nodes, setNodes] = React.useState([]);
+  const [loadingNodes, setLoadingNodes] = React.useState(true);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [form, setForm] = React.useState({ parentId: '', code: '', name: '', patternType: 'order', patternText: '', description: '', bold: false, underline: false });
@@ -367,6 +369,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   }, [nodes]);
 
   const load = async () => {
+    setLoadingNodes(true);
     const [nodesRes, tagsRes, teamsRes, rolesRes] = await Promise.all([
       axios.get(`/api/models/${modelId}/nodes`),
       axios.get(`/api/models/${modelId}/tags`),
@@ -380,6 +383,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     setNodes(nodesRes.data);
     setExpanded(nodesRes.data.map(n => String(n.id)));
     setTags(tagsRes.data);
+    setLoadingNodes(false);
   };
 
   React.useEffect(() => {
@@ -450,7 +454,13 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
     }
   }, [viewNode, nodes]);
 
-  React.useEffect(() => { if (open) { load(); loadCategories(); } }, [open]);
+  React.useEffect(() => {
+    if (open) {
+      setLoadingNodes(true);
+      load();
+      loadCategories();
+    }
+  }, [open]);
 
   const [saveNode, saving] = useProcessingAction(async () => {
     const countA = rasciLines.filter(l => l.responsibilities.includes('A')).length;
@@ -845,26 +855,34 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             </Tooltip>
           </div>
         )}
-        <TreeView
-          slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
-          expandedItems={expanded}
-          onExpandedItemsChange={(e, ids) => {
-            setExpanded(ids);
-            setAllExpanded(ids.length === nodes.length);
-          }}
-          selectedItems={selected}
-          onSelectedItemsChange={(e, ids) => {
-            const idStr = Array.isArray(ids) ? ids[0] : ids;
-            setSelected(idStr);
-            const id = parseInt(idStr, 10);
-            const node = nodes.find(n => n.id === id);
-            setViewNode(node || null);
-            if (node && !detailsOpen) setDetailsOpen(true);
-          }}
-          expansionTrigger="iconContainer"
-        >
-          {renderTree(null)}
-        </TreeView>
+        {loadingNodes ? (
+          <div>
+            {[...Array(5)].map((_, idx) => (
+              <Skeleton key={idx} variant="text" height={30} sx={{ my: 0.5 }} />
+            ))}
+          </div>
+        ) : (
+          <TreeView
+            slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
+            expandedItems={expanded}
+            onExpandedItemsChange={(e, ids) => {
+              setExpanded(ids);
+              setAllExpanded(ids.length === nodes.length);
+            }}
+            selectedItems={selected}
+            onSelectedItemsChange={(e, ids) => {
+              const idStr = Array.isArray(ids) ? ids[0] : ids;
+              setSelected(idStr);
+              const id = parseInt(idStr, 10);
+              const node = nodes.find(n => n.id === id);
+              setViewNode(node || null);
+              if (node && !detailsOpen) setDetailsOpen(true);
+            }}
+            expansionTrigger="iconContainer"
+          >
+            {renderTree(null)}
+          </TreeView>
+        )}
         </div>
         {detailsOpen && (
           <div
