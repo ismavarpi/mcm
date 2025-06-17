@@ -368,7 +368,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
 
   const load = async () => {
     const [nodesRes, tagsRes, teamsRes, rolesRes] = await Promise.all([
-      axios.get(`/api/models/${modelId}/nodes`),
+      axios.get(`/api/models/${modelId}/nodes/tree`),
       axios.get(`/api/models/${modelId}/tags`),
       axios.get(`/api/models/${modelId}/teams`),
       axios.get(`/api/models/${modelId}/roles`)
@@ -397,7 +397,9 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       }
       setExpanded(prev => Array.from(new Set([...prev, ...path])));
       setSelected(String(focusNodeId));
-      setViewNode(map[focusNodeId]);
+      axios.get(`/api/nodes/${focusNodeId}`)
+        .then(res => setViewNode(res.data))
+        .catch(() => setViewNode(null));
       setFocusNodeId(null);
     }
   }, [focusNodeId, nodes]);
@@ -512,28 +514,30 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
   });
 
   const openEdit = async (node) => {
-    setEditing(node);
+    const res = await axios.get(`/api/nodes/${node.id}`);
+    const fullNode = res.data;
+    setEditing(fullNode);
     setEditingLeaf(!nodes.some(n => n.parentId === node.id));
     setForm({
-      parentId: node.parentId || '',
-      code: node.code,
-      name: node.name,
-      patternType: node.codePattern === 'ORDER' ? 'order' : 'text',
-      patternText: node.codePattern === 'ORDER' ? '' : node.codePattern,
-      description: node.description || '',
-      bold: !!node.bold,
-      underline: !!node.underline
+      parentId: fullNode.parentId || '',
+      code: fullNode.code,
+      name: fullNode.name,
+      patternType: fullNode.codePattern === 'ORDER' ? 'order' : 'text',
+      patternText: fullNode.codePattern === 'ORDER' ? '' : fullNode.codePattern,
+      description: fullNode.description || '',
+      bold: !!fullNode.bold,
+      underline: !!fullNode.underline
     });
-    const parent = nodes.find(n => n.id === node.parentId);
+    const parent = nodes.find(n => n.id === fullNode.parentId);
     const inherited = parent && parent.tags ? parent.tags.map(t => t.id) : [];
     setInheritedTags(inherited);
-    const nodeTagIds = node.tags ? node.tags.map(t => t.id) : [];
+    const nodeTagIds = fullNode.tags ? fullNode.tags.map(t => t.id) : [];
     setSelectedTags(Array.from(new Set([...nodeTagIds, ...inherited])));
-    let rasciData = rasciCache.current[node.id];
+    let rasciData = rasciCache.current[fullNode.id];
     if (!rasciData) {
-      const rasciRes = await axios.get(`/api/nodes/${node.id}/rascis`);
+      const rasciRes = await axios.get(`/api/nodes/${fullNode.id}/rascis`);
       rasciData = rasciRes.data;
-      rasciCache.current[node.id] = rasciData;
+      rasciCache.current[fullNode.id] = rasciData;
     }
     const sorted = rasciData.sort((a,b)=>{
       const ta = teams.find(t=>t.id===a.Role.teamId)||{order:0};
@@ -544,7 +548,7 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
       return ra.order-rb.order;
     });
     setRasciLines(completeRasciLines(sorted.map(r=>({id:r.id, teamId:r.Role.teamId, roleId:r.roleId, responsibilities:r.responsibilities.split('')}))));
-    loadAttachments(node.id);
+    loadAttachments(fullNode.id);
     setTab(0);
     setDialogOpen(true);
   };
@@ -853,13 +857,17 @@ export default function NodeList({ modelId, modelName, open, onClose }) {
             setAllExpanded(ids.length === nodes.length);
           }}
           selectedItems={selected}
-          onSelectedItemsChange={(e, ids) => {
+          onSelectedItemsChange={async (e, ids) => {
             const idStr = Array.isArray(ids) ? ids[0] : ids;
             setSelected(idStr);
             const id = parseInt(idStr, 10);
-            const node = nodes.find(n => n.id === id);
-            setViewNode(node || null);
-            if (node && !detailsOpen) setDetailsOpen(true);
+            try {
+              const res = await axios.get(`/api/nodes/${id}`);
+              setViewNode(res.data);
+              if (!detailsOpen) setDetailsOpen(true);
+            } catch {
+              setViewNode(null);
+            }
           }}
           expansionTrigger="iconContainer"
         >
