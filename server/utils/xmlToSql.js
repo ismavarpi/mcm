@@ -25,6 +25,7 @@ function buildInserts(entity, rows) {
   for (const row of rows) {
     const vals = cols.map(c => row[c] === null ? 'NULL' : JSON.stringify(row[c])).join(', ');
     sql += `INSERT INTO \`${entity}\` (id, ${colList}) VALUES (${row.id}, ${vals});\n`;
+
   }
   sql += '\n';
   return sql;
@@ -42,6 +43,7 @@ async function main() {
   const startNodeId = (await db.Node.max('id')) || 0;
   const startRasciId = (await db.NodeRasci.max('id')) || 0;
 
+
   const teams = new Map();
   const roles = new Map();
   const nodes = new Map();
@@ -52,6 +54,7 @@ async function main() {
   let roleId = startRoleId + 1;
   let nodeId = startNodeId + 1;
   let rasciId = startRasciId + 1;
+
   const orderCounters = new Map();
 
   function ensureNode(pathArr, name, desc) {
@@ -65,6 +68,7 @@ async function main() {
       const id = nodeId++;
       const node = {
         id,
+
         name,
         description: desc,
         order,
@@ -74,6 +78,7 @@ async function main() {
         underline: false,
         modelId,
         parentId: parent ? parent.id : null,
+
       };
       nodes.set(key, node);
     }
@@ -122,6 +127,7 @@ async function main() {
   sql += buildInserts('NodeRascis', rascis);
 
   await db.sequelize.close();
+
 
   fs.writeFileSync(output, sql);
   console.log('SQL generated at', output);
