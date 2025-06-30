@@ -11,6 +11,7 @@ FROM node:18 AS build-server
 WORKDIR /app
 COPY server/package*.json ./server/
 RUN cd server && npm install --production
+COPY server ./server
 
 # Final image
 FROM node:18-slim
