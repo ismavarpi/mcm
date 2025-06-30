@@ -7,9 +7,9 @@ Este documento resume cómo poner en marcha la aplicación MCM tanto de forma ma
 Los pasos detallados se encuentran en `README.md`. En resumen:
 
 1. Instalar Node.js, npm y MariaDB.
-2. Crear la base de datos `mcm` y el usuario correspondiente.
+2. Crear la base de datos `mcm` y un usuario `mcm` asignándole la contraseña que prefieras (la necesitaremos después).
 3. Clonar el repositorio y ejecutar `npm install` en `server` y `client`.
-4. Configurar las variables de entorno en `server/.env` siguiendo el ejemplo `server/.env.example`.
+4. Copiar `server/.env.example` a `server/.env` y editarlo para introducir la contraseña elegida en la variable `DB_PASSWORD` (y opcionalmente `DB_ROOT_PASSWORD`).
 5. Lanzar la API con `npm start` y el cliente con `npm run dev` (o `npm run build` para producción).
 
 ## 2. Despliegue con Docker Desktop
@@ -24,14 +24,16 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
    ```
-3. Copiar el archivo de ejemplo de variables de entorno y editarlo según tus necesidades:
+3. Copiar el archivo de ejemplo de variables de entorno y editarlo:
    ```bash
    cp server/.env.example server/.env
-   # Edita server/.env con un editor de texto para ajustar las contraseñas
+   # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
+   # mcm. Docker Compose usará estas variables automáticamente.
    # Si usas Docker Compose establece DB_HOST=db
-   # Si desplegas la bd sin contenedores estable DB_HOST=localhost
+   # Si desplegas la bd sin contenedores pon DB_HOST=localhost
    ```
-4. Desplegar en la carpeta mcm-main el archivo de docker-compose.yml configurado con las credenciales de acceso a base de datos.
+4. Verifica que `docker-compose.yml` apunte al archivo `server/.env` para que
+   la base de datos y la aplicación compartan las mismas credenciales.
 
 ### 2.2 Puesta en marcha
 
