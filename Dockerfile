@@ -16,7 +16,7 @@ COPY server ./server
 # Final image
 FROM node:18-slim
 WORKDIR /app
-COPY --from=build-server /app/server ./
+COPY --from=build-server /app/server/ ./
 COPY --from=build-web /app/client/dist ./public
 ENV NODE_ENV=production
 EXPOSE 3001
