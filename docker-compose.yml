@@ -4,12 +4,9 @@ services:
     restart: always
     env_file:
       - .env
+    # Las variables de MariaDB se leen directamente del archivo .env
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
-    entrypoint: ["sh", "-c", "echo MYSQL_USER=$MYSQL_USER; echo MYSQL_PASSWORD=$MYSQL_PASSWORD; echo MYSQL_DATABASE=$MYSQL_DATABASE; exec docker-entrypoint.sh mysqld"]
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
     volumes:
       - dbdata:/var/lib/mysql
     ports:
