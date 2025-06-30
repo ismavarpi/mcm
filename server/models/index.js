@@ -95,6 +95,10 @@ async function initDatabase(retries = 20, delayMs = 2000) {
       console.log(`Attempt ${attempt}: authenticating to DB`);
       await sequelize.authenticate();
 
+      // First create missing tables without altering existing ones to ensure
+      // models like Parameter are available before any queries are executed.
+      await sequelize.sync();
+
       const queryInterface = sequelize.getQueryInterface();
       let table;
       try {
@@ -149,6 +153,7 @@ async function initDatabase(retries = 20, delayMs = 2000) {
         await db.NodeRasci.destroy({ where: { roleId: { [Op.notIn]: roleIds } } });
       }
 
+      // Now apply any pending schema changes while preserving existing data.
       await sequelize.sync({ alter: true });
       return;
     } catch (err) {
