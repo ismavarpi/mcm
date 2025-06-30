@@ -9,14 +9,15 @@ RUN npm run build
 # Install server dependencies
 FROM node:18 AS build-server
 WORKDIR /app
-COPY server/package*.json ./server/
-RUN cd server && npm install --production
-COPY server ./server
+COPY server/package*.json ./
+RUN npm install --production
+COPY server ./
+
 
 # Final image
 FROM node:18-slim
 WORKDIR /app
-COPY --from=build-server /app/server/ ./
+COPY --from=build-server /app ./
 COPY --from=build-web /app/client/dist ./public
 ENV NODE_ENV=production
 EXPOSE 3001

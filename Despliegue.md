@@ -33,10 +33,11 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
 
 ### 2.2 Puesta en marcha
 
-1. En la misma terminal ejecutar:
+1. Desde la carpeta que contiene `docker-compose.yml` ejecutar:
    ```bash
    docker compose up --build
    ```
+   Asegúrate de situarte en la raíz del proyecto (donde está `docker-compose.yml`).
    La primera vez tardará un poco porque se descargarán las imágenes base y se compilará el cliente.
 2. Cuando finalice, Docker levantará dos contenedores:
    - **db**: con MariaDB y los datos persistidos en un volumen llamado `dbdata`.
