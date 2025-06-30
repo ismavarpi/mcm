@@ -41,7 +41,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    DB_NAME=mcm
    DB_USER=mcm
    DB_PASSWORD=clave_segura
-   DB_HOST=localhost
+   DB_HOST=localhost   # usa "db" si la base de datos se ejecuta con Docker Compose
    # Puerto por defecto de MariaDB/MySQL. Cambiar si se usa otro
    DB_PORT=3306
    ENV
