@@ -5,8 +5,7 @@ services:
     env_file:
       - .env
     # Las variables de MariaDB se leen directamente del archivo .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+   
     volumes:
       - dbdata:/var/lib/mysql
     ports:
