@@ -2,12 +2,15 @@ const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();
 
+const dbHost = process.env.DB_HOST
+  || (process.env.NODE_ENV === 'production' ? 'db' : 'localhost');
+
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'mcm',
   process.env.DB_USER || 'root',
   process.env.DB_PASSWORD || '',
   {
-    host: process.env.DB_HOST || 'localhost',
+    host: dbHost,
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
     dialect: 'mariadb',
     pool: {
@@ -74,7 +77,7 @@ db.Node.hasMany(db.NodeAttachment, { as: 'attachments', foreignKey: 'nodeId' });
 db.NodeAttachment.belongsTo(db.Node, { foreignKey: 'nodeId' });
 
 
-async function initDatabase(retries = 5, delayMs = 2000) {
+async function initDatabase(retries = 20, delayMs = 2000) {
   for (let attempt = 1; ; attempt++) {
     try {
       await sequelize.authenticate();

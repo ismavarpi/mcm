@@ -10,6 +10,12 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "$DB_USER", "-p$DB_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
     volumes:
       - dbdata:/var/lib/mysql
     ports:
@@ -19,8 +25,11 @@ services:
     build: .
     env_file:
       - server/.env
+    environment:
+      DB_HOST: db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3001:3001"
     volumes:

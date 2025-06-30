@@ -163,8 +163,10 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    cp server/.env.example server/.env
    # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
    # mcm. Docker Compose usará estas variables automáticamente.
-   # Si usas Docker Compose establece DB_HOST=db
-   # Si desplegas la bd sin contenedores pon DB_HOST=localhost
+   # Usa siempre el nombre del servicio "db" como DB_HOST cuando ejecutes
+   # Docker Compose. Evita utilizar la IP interna de los contenedores, ya que
+   # puede cambiar en cada reinicio.
+   # Si despliegas la BD sin contenedores pon DB_HOST=localhost
    ```
 4. Verifica que `docker-compose.yml` apunte al archivo `server/.env` para que
    la base de datos y la aplicación compartan las mismas credenciales.
