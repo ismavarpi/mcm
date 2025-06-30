@@ -160,7 +160,9 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    ```
 3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Es necesario
    generar dos archivos: uno en la raíz para Docker Compose (`.env`) y otro en
-   `server/.env` para ejecutar la API de forma independiente:
+   `server/.env` para ejecutar la API de forma independiente. Ambos incluyen
+   ahora las variables que necesita el contenedor de MariaDB (`MYSQL_*`) junto
+   a las variables usadas por la aplicación (`DB_*`):
    ```bash
    cp server/.env.example .env
    cp server/.env.example server/.env
