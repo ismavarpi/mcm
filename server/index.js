@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 // via the `env_file` option in docker-compose.yml.
 dotenv.config({ path: path.join(__dirname, '.env') });
 console.log('Environment DB_USER:', process.env.DB_USER);
+console.log('Environment DB_PASSWORD:', process.env.DB_PASSWORD);
 const { app, db } = require('./app');
 
 db.initDatabase()

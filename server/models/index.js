@@ -13,7 +13,8 @@ console.log('DB connection parameters:', {
   host: dbHost,
   port: process.env.DB_PORT || 3306,
   database: process.env.DB_NAME,
-  user: process.env.DB_USER
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD
 });
 
 const sequelize = new Sequelize(
@@ -91,6 +92,7 @@ db.NodeAttachment.belongsTo(db.Node, { foreignKey: 'nodeId' });
 async function initDatabase(retries = 20, delayMs = 2000) {
   for (let attempt = 1; ; attempt++) {
     try {
+      console.log(`Attempt ${attempt}: authenticating to DB`);
       await sequelize.authenticate();
 
       const queryInterface = sequelize.getQueryInterface();
@@ -153,6 +155,7 @@ async function initDatabase(retries = 20, delayMs = 2000) {
       if (attempt >= retries) throw err;
       console.error(`Database connection failed (attempt ${attempt}). Retrying...`);
       console.error('Error details:', err.message);
+      console.error('Stack:', err.stack);
       await new Promise(res => setTimeout(res, delayMs));
     }
   }
