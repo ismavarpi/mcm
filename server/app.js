@@ -60,7 +60,10 @@ app.use('/uploads', express.static(uploadDir));
 const frontendDir = path.join(__dirname, 'public');
 if (fs.existsSync(frontendDir)) {
   app.use(express.static(frontendDir));
-  app.get('*', (req, res, next) => {
+  // Express 5 with path-to-regexp v8 doesn't accept '*' as a route
+  // pattern. Using a named wildcard avoids the "Missing parameter name"
+  // error when starting the server.
+  app.get('/*splat', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/uploads')) {
       return next();
     }
