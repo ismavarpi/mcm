@@ -21,4 +21,4 @@ COPY --from=build-server /app ./
 COPY --from=build-web /app/client/dist ./public
 ENV NODE_ENV=production
 EXPOSE 3001
-CMD ["node", "index.js"]
+CMD ["node", "server/index.js"]
