@@ -1,4 +1,4 @@
-# Despliegue de la aplicación MCM
+# Despliegue de la aplicación MCM en un servidor Linux
 
 Esta guía explica cómo poner en marcha la aplicación desde cero en un servidor Linux. Los ejemplos asumen una distribución basada en Debian/Ubuntu y permisos de administrador.
 
@@ -119,3 +119,84 @@ Para utilizar estas herramientas acceda a **Administrar** desde la cabecera y se
 3. Al finalizar se mostrará un registro con el resultado de cada sentencia ejecutada.
 
 El fichero exportado contiene sentencias `INSERT` que actualizan registros existentes mediante `ON DUPLICATE KEY UPDATE`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Guía de despliegue en Dockers
+
+Este documento resume cómo poner en marcha la aplicación MCM tanto de forma manual en un servidor como mediante contenedores Docker.
+
+
+A continuación se describen todos los pasos necesarios para ejecutar la aplicación utilizando contenedores. Estos pasos están pensados para usuarios sin experiencia previa en Docker.
+
+## 2.1 Preparación
+
+1. **Instalar Docker Desktop** desde [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
+2. Abrir una terminal y clonar el repositorio:
+   ```bash
+   git clone <URL_DEL_REPOSITORIO> mcm
+   cd mcm
+   ```
+3. Copiar el archivo de ejemplo de variables de entorno y editarlo:
+   ```bash
+   cp server/.env.example server/.env
+   # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
+   # mcm. Docker Compose usará estas variables automáticamente.
+   # Si usas Docker Compose establece DB_HOST=db
+   # Si desplegas la bd sin contenedores pon DB_HOST=localhost
+   ```
+4. Verifica que `docker-compose.yml` apunte al archivo `server/.env` para que
+   la base de datos y la aplicación compartan las mismas credenciales.
+
+## 2.2 Puesta en marcha
+
+1. Desde la carpeta que contiene `docker-compose.yml` ejecutar:
+   ```bash
+   docker compose up --build
+   ```
+   Asegúrate de situarte en la raíz del proyecto (donde está `docker-compose.yml`).
+   La primera vez tardará un poco porque se descargarán las imágenes base y se compilará el cliente.
+2. Cuando finalice, Docker levantará dos contenedores:
+   - **db**: con MariaDB y los datos persistidos en un volumen llamado `dbdata`.
+   - **app**: que contiene la API Node y los archivos estáticos del cliente React.
+3. Accede a la aplicación abriendo [http://localhost:3001](http://localhost:3001) en tu navegador.
+
+## 2.3 Comandos úteis
+
+- Detener los contenedores:
+  ```bash
+  docker compose down
+  ```
+- Ver los registros en tiempo real:
+  ```bash
+  docker compose logs -f
+  ```
+- Actualizar la imagen tras cambios en el código:
+  ```bash
+  docker compose build
+  docker compose up -d
+  ```
+
+Con estos pasos la aplicación queda lista para usarse tanto de forma tradicional como a través de Docker.
+
