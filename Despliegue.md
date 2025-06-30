@@ -28,6 +28,7 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    ```bash
    cp server/.env.example server/.env
    # Edita server/.env con un editor de texto para ajustar las contraseñas
+   # Si usas Docker Compose establece DB_HOST=db
    ```
 4. Desplegar en la carpeta mcm-main el archivo de docker-compose.yml configurado con las credenciales de acceso a base de datos.
 
