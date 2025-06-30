@@ -3,11 +3,13 @@ services:
   db:
     image: mariadb:11
     restart: always
+    env_file:
+      - server/.env
     environment:
-      MYSQL_DATABASE: mcm
-      MYSQL_USER: mcm
-      MYSQL_PASSWORD: clave_segura
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
     volumes:
       - dbdata:/var/lib/mysql
     ports:

@@ -29,7 +29,8 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
 3. **Preparar la base de datos**
    ```sql
    CREATE DATABASE mcm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   CREATE USER 'mcm'@'localhost' IDENTIFIED BY 'clave_segura';
+   -- Sustituye <TU_CONTRASENA> por la contraseña que quieras utilizar
+   CREATE USER 'mcm'@'localhost' IDENTIFIED BY '<TU_CONTRASENA>';
    GRANT ALL PRIVILEGES ON mcm.* TO 'mcm'@'localhost';
    FLUSH PRIVILEGES;
    ```
@@ -40,12 +41,19 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cat <<'ENV' > .env
    DB_NAME=mcm
    DB_USER=mcm
-   DB_PASSWORD=clave_segura
+   # Usa la misma contraseña definida al crear el usuario en MariaDB
+   DB_PASSWORD=<TU_CONTRASENA>
+   DB_ROOT_PASSWORD=rootpass
    DB_HOST=localhost   # usa "db" si la base de datos se ejecuta con Docker Compose. Usa "localhost" si se despliega la bd sin contenedores
    # Puerto por defecto de MariaDB/MySQL. Cambiar si se usa otro
    DB_PORT=3306
    ENV
    cd ..
+   ```
+
+   Esta contraseña se reutiliza por Docker para crear la base de datos
+   inicial, por lo que cualquier cambio debe reflejarse tanto en el script
+   de creación como en este archivo.
    ```
 6. **Preparar el cliente**
    ```bash
