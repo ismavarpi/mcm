@@ -57,4 +57,15 @@ app.use('/api/jira', jiraRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/uploads', express.static(uploadDir));
 
+const frontendDir = path.join(__dirname, 'public');
+if (fs.existsSync(frontendDir)) {
+  app.use(express.static(frontendDir));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDir, 'index.html'));
+  });
+}
+
 module.exports = { app, db };
