@@ -1,9 +1,20 @@
 const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
-require('dotenv').config();
+const dotenv = require('dotenv');
+// Explicitly load the environment file if present. Docker containers will
+// receive the variables via the `env_file` option, so this is mainly for
+// local development.
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const dbHost = process.env.DB_HOST
   || (process.env.NODE_ENV === 'production' ? 'db' : 'localhost');
+
+console.log('DB connection parameters:', {
+  host: dbHost,
+  port: process.env.DB_PORT || 3306,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER
+});
 
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'mcm',
@@ -141,6 +152,7 @@ async function initDatabase(retries = 20, delayMs = 2000) {
     } catch (err) {
       if (attempt >= retries) throw err;
       console.error(`Database connection failed (attempt ${attempt}). Retrying...`);
+      console.error('Error details:', err.message);
       await new Promise(res => setTimeout(res, delayMs));
     }
   }
