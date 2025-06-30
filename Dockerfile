@@ -13,6 +13,7 @@ COPY server/package*.json ./
 RUN npm install --production
 COPY server ./
 
+
 # Final image
 FROM node:18-slim
 WORKDIR /app
