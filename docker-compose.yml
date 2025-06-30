@@ -10,12 +10,7 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$MYSQL_USER -p$MYSQL_PASSWORD"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
+    entrypoint: ["sh", "-c", "echo MYSQL_USER=$MYSQL_USER; echo MYSQL_PASSWORD=$MYSQL_PASSWORD; echo MYSQL_DATABASE=$MYSQL_DATABASE; exec docker-entrypoint.sh mysqld"]
     volumes:
       - dbdata:/var/lib/mysql
     ports:
@@ -28,8 +23,7 @@ services:
     environment:
       DB_HOST: db
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     ports:
       - "3001:3001"
     volumes:
