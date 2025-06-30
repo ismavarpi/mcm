@@ -4,3 +4,5 @@ server/node_modules
 client/dist
 export/*.sql
 server/.env
+.env
+

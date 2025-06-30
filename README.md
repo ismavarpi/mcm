@@ -158,18 +158,19 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
    ```
-3. Copiar el archivo de ejemplo de variables de entorno y editarlo:
+3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Es necesario
+   generar dos archivos: uno en la raíz para Docker Compose (`.env`) y otro en
+   `server/.env` para ejecutar la API de forma independiente:
    ```bash
+   cp server/.env.example .env
    cp server/.env.example server/.env
    # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
-   # mcm. Docker Compose usará estas variables automáticamente.
-   # Usa siempre el nombre del servicio "db" como DB_HOST cuando ejecutes
-   # Docker Compose. Evita utilizar la IP interna de los contenedores, ya que
-   # puede cambiar en cada reinicio.
-   # Si despliegas la BD sin contenedores pon DB_HOST=localhost
+   # mcm. Docker Compose usará estas variables automáticamente. Usa siempre el
+   # nombre del servicio "db" como DB_HOST cuando ejecutes Docker Compose. Si la
+   # base de datos se ejecuta fuera de Docker, establece DB_HOST=localhost
    ```
-4. Verifica que `docker-compose.yml` apunte al archivo `server/.env` para que
-   la base de datos y la aplicación compartan las mismas credenciales.
+4. Asegúrate de que `docker-compose.yml` utiliza el archivo `.env` para cargar
+   las credenciales compartidas por la base de datos y la aplicación.
 
 ## 2.2 Puesta en marcha
 

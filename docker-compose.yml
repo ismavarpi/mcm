@@ -4,7 +4,7 @@ services:
     image: mariadb:11
     restart: always
     env_file:
-      - server/.env
+      - .env
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
@@ -24,7 +24,7 @@ services:
   app:
     build: .
     env_file:
-      - server/.env
+      - .env
     environment:
       DB_HOST: db
     depends_on:
