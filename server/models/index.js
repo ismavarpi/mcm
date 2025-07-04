@@ -1,10 +1,9 @@
 const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
 const dotenv = require('dotenv');
-// Explicitly load the environment file if present. Docker containers will
-// receive the variables via the `env_file` option, so this is mainly for
-// local development.
-dotenv.config({ path: path.join(__dirname, '.env') });
+// Carga el archivo de entorno cuando se ejecuta fuera de Docker. En producción
+// las variables llegan a través del contenedor y el fichero puede no existir.
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const dbHost = process.env.DB_HOST
   || (process.env.NODE_ENV === 'production' ? 'db' : 'localhost');
