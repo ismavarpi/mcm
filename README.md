@@ -46,9 +46,13 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    DB_PASSWORD=<TU_CONTRASENA>
    DB_ROOT_PASSWORD=rootpass
    DB_HOST=localhost   # usa "db" si la base de datos se ejecuta con Docker Compose. Usa "localhost" si se despliega la bd sin contenedores
-   # Puerto por defecto de MariaDB/MySQL. Cambiar si se usa otro
+   # Puerto de MariaDB al que se conecta la aplicación. Con Docker Compose se
+   # mantiene en 3306 porque es el puerto interno del contenedor.
    DB_PORT=3306
-   # Puerto expuesto en el host para MariaDB
+   # Puerto expuesto en el host para MariaDB. Cambia solo este valor si
+   # necesitas que el contenedor escuche en otro puerto del host (por ejemplo
+   # 3308). La aplicación seguirá usando DB_PORT=3306 para conectar con el
+   # servicio "db".
    DB_PORT_HOST=3306
    ENV
    cd ..
