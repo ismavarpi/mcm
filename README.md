@@ -77,7 +77,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cd client
    npm run dev
    ```
-  React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:3000` con recarga automática.
+ React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:5173` (puerto por defecto de Vite) con recarga automática.
   
 ## Despliegue definitivo
 
@@ -187,6 +187,12 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    - **app**: que contiene la API Node y los archivos estáticos del cliente React.
 3. Accede a la aplicación abriendo [http://localhost:3001](http://localhost:3001) en tu navegador.
 
+## URLs de acceso
+
+- **Desarrollo con Vite**: Ejecuta `npm run dev` en la carpeta `client`. Por defecto, el frontend se servirá en `http://<IP_DEL_SERVIDOR>:5173` y proxyeará las peticiones a la API.
+- **API en local**: Si ejecutas `npm start` dentro de `server`, la API estará disponible en `http://localhost:3001`.
+- **Despliegue con Docker**: Tras `docker compose up --build`, tanto el frontend compilado como la API se sirven juntos en `http://localhost:3001`.
+
 ## 2.3 Comandos úteis
 
 - Detener los contenedores:
@@ -204,4 +210,44 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
   ```
 
 Con estos pasos la aplicación queda lista para usarse tanto de forma tradicional como a través de Docker.
+
+## 2.4 Comprobación de puertos
+
+Si tras desplegar con Docker no puedes acceder a `http://localhost:3001`, comprueba que el contenedor esté
+escuchando en dicho puerto:
+
+```bash
+docker compose ps
+```
+
+Deberías ver una línea similar a:
+
+```
+app  running 0.0.0.0:3001->3001/tcp
+```
+
+Si no aparece el puerto o el estado es `exited`, revisa los mensajes con:
+
+```bash
+docker compose logs app
+```
+
+También puedes verificar desde el host que el puerto 3001 está a la escucha con:
+
+```bash
+ss -ltn '( sport = :3001 )'
+```
+
+En Windows la alternativa es:
+
+```powershell
+netstat -ano | findstr :3001
+```
+
+Si el puerto no está abierto, asegúrate de que `docker-compose.yml` tenga la directiva
+`"3001:3001"` en la sección `ports` del servicio `app` y vuelve a ejecutar:
+
+```bash
+docker compose up --build
+```
 
