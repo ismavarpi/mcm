@@ -6,10 +6,13 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('./models');
 const session = require('express-session');
+const morgan = require('morgan');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(morgan('combined'));
+console.log('HTTP request logging enabled via morgan');
 if (process.env.USE_AUTH && process.env.USE_AUTH !== 'false') {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'mcm-secret',
