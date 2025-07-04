@@ -192,9 +192,10 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
 ## URLs de acceso
 
 - **Desarrollo con Vite**: Ejecuta `npm run dev` en la carpeta `client`. Por defecto, el frontend se servirá en `http://<IP_DEL_SERVIDOR>:5173` y proxyeará las peticiones a la API.
-  Si no funciona la dirección `http://localhost:5173`, obtén tu IP local con `ipconfig` en Windows o `ip addr`/`ifconfig` en Linux/Mac y sustituye `<IP_DEL_SERVIDOR>` por esa dirección.
 - **API en local**: Si ejecutas `npm start` dentro de `server`, la API estará disponible en `http://localhost:3001`.
 - **Despliegue con Docker**: Tras `docker compose up --build`, tanto el frontend compilado como la API se sirven juntos en `http://localhost:3001`.
+
+Si no funciona la dirección `http://localhost:5173`, obtén tu IP local con `ipconfig` en Windows o `ip addr`/`ifconfig` en Linux/Mac y sustituye `<IP_DEL_SERVIDOR>` por esa dirección.
 
 ## 2.3 Comandos úteis
 
