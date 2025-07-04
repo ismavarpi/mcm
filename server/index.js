@@ -17,7 +17,8 @@ console.log('Initializing database...');
 db.initDatabase()
   .then(() => {
     console.log('Database initialized successfully');
-    const server = app.listen(3001, () => console.log('Server running on port 3001'));
+    const port = parseInt(process.env.FRONT_PORT || process.env.PORT || '3001', 10);
+    const server = app.listen(port, () => console.log(`Server running on port ${port}`));
     server.on('error', err => console.error('Server error:', err));
   })
   .catch(err => {
