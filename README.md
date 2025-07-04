@@ -24,7 +24,8 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    
    
    ```sql
-    mysql -h localhost -P 3306 -u root -p
+    # Sustituye <PUERTO_HOST> por el puerto configurado en DB_PORT_HOST
+    mysql -h localhost -P <PUERTO_HOST> -u root -p
    ```
 3. **Preparar la base de datos**
    ```sql
@@ -47,9 +48,14 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    DB_HOST=localhost   # usa "db" si la base de datos se ejecuta con Docker Compose. Usa "localhost" si se despliega la bd sin contenedores
    # Puerto por defecto de MariaDB/MySQL. Cambiar si se usa otro
    DB_PORT=3306
+   # Puerto expuesto en el host para MariaDB
+   DB_PORT_HOST=3306
    ENV
    cd ..
    ```
+
+   Cambia `DB_PORT_HOST` si necesitas exponer la base de datos en otro puerto
+   del host porque ya haya otro servicio escuchando en `3306`.
 
    Esta contraseña se reutiliza por Docker para crear la base de datos
    inicial, por lo que cualquier cambio debe reflejarse tanto en el script
