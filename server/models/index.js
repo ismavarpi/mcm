@@ -9,9 +9,13 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const dbHost = process.env.DB_HOST
   || (process.env.NODE_ENV === 'production' ? 'db' : 'localhost');
 
+const dbPort = dbHost === 'db'
+  ? 3306
+  : (process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306);
+
 console.log('DB connection parameters:', {
   host: dbHost,
-  port: process.env.DB_PORT || 3306,
+  port: dbPort,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD
@@ -23,7 +27,7 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD || '',
   {
     host: dbHost,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+    port: dbPort,
     dialect: 'mariadb',
     pool: {
       max: parseInt(process.env.DB_POOL_MAX || '20', 10),
