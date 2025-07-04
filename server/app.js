@@ -42,6 +42,7 @@ const authRoutes = require('./routes/auth');
 if (process.env.USE_AUTH && process.env.USE_AUTH !== 'false') {
   app.use('/api/auth', authRoutes);
   app.use((req, res, next) => {
+    if (!req.path.startsWith('/api/')) return next();
     if (req.path.startsWith('/api/auth')) return next();
     if (req.session && req.session.user) return next();
     res.status(401).json({ error: 'Unauthorized' });
