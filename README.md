@@ -39,32 +39,14 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    ```bash
    cd server
    npm install
-   cat <<'ENV' > .env
-   DB_NAME=mcm
-   DB_USER=mcm
-   # Usa la misma contraseña definida al crear el usuario en MariaDB
-   DB_PASSWORD=<TU_CONTRASENA>
-   DB_ROOT_PASSWORD=rootpass
-   DB_HOST=localhost   # usa "db" si la base de datos se ejecuta con Docker Compose. Usa "localhost" si se despliega la bd sin contenedores
-   # Puerto de MariaDB al que se conecta la aplicación. Con Docker Compose se
-   # mantiene en 3306 porque es el puerto interno del contenedor.
-   DB_PORT=3306
-   # Puerto expuesto en el host para MariaDB. Cambia solo este valor si
-   # necesitas que el contenedor escuche en otro puerto del host (por ejemplo
-   # 3308). La aplicación seguirá usando DB_PORT=3306 para conectar con el
-   # servicio "db".
-   DB_PORT_HOST=3306
-   ENV
    cd ..
+   cp .env.example .env
+   # Edita el archivo .env y establece la contraseña utilizada al crear el usuario de MariaDB
    ```
 
-   Cambia `DB_PORT_HOST` si necesitas exponer la base de datos en otro puerto
-   del host porque ya haya otro servicio escuchando en `3306`.
+   Cambia `DB_PORT_HOST` si necesitas exponer la base de datos en otro puerto del host porque ya haya otro servicio escuchando en `3306`.
 
-   Esta contraseña se reutiliza por Docker para crear la base de datos
-   inicial, por lo que cualquier cambio debe reflejarse tanto en el script
-   de creación como en este archivo.
-   ```
+   Esta contraseña se reutiliza por Docker para crear la base de datos inicial, por lo que cualquier cambio debe reflejarse tanto en el script de creación como en este archivo.
 6. **Preparar el cliente**
    ```bash
    cd client
@@ -170,14 +152,11 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
    ```
-3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Es necesario
-   generar dos archivos: uno en la raíz para Docker Compose (`.env`) y otro en
-   `server/.env` para ejecutar la API de forma independiente. Ambos incluyen
-   ahora las variables que necesita el contenedor de MariaDB (`MYSQL_*`) junto
-   a las variables usadas por la aplicación (`DB_*`):
+3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Solo es
+   necesario crear un único archivo `.env` en la raíz. Este fichero contiene
+   tanto las variables usadas por la aplicación como las requeridas por Docker:
    ```bash
-   cp server/.env.example .env
-   cp server/.env.example server/.env
+   cp .env.example .env
    # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
    # mcm. Docker Compose usará estas variables automáticamente. Usa siempre el
    # nombre del servicio "db" como DB_HOST cuando ejecutes Docker Compose. Si la
