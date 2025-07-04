@@ -75,7 +75,7 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cd server
    npm start
    ```
-   La API quedará accesible en `http://localhost:3001`.
+   La API quedará accesible en `http://localhost:${FRONT_PORT}` (por defecto `3001`).
    Si la base de datos aún no está disponible, el servidor reintentará la conexión unas veces antes de abortar.
 2. **Iniciar el cliente**
    En otra terminal:
@@ -193,13 +193,13 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
 2. Cuando finalice, Docker levantará dos contenedores:
    - **db**: con MariaDB y los datos persistidos en un volumen llamado `dbdata`.
    - **app**: que contiene la API Node y los archivos estáticos del cliente React.
-3. Accede a la aplicación abriendo [http://localhost:3001](http://localhost:3001) en tu navegador.
+3. Accede a la aplicación abriendo [http://localhost:${FRONT_PORT}](http://localhost:${FRONT_PORT}) en tu navegador.
 
 ## URLs de acceso
 
 - **Desarrollo con Vite**: Ejecuta `npm run dev` en la carpeta `client`. Por defecto, el frontend se servirá en `http://<IP_DEL_SERVIDOR>:5173` y proxyeará las peticiones a la API.
-- **API en local**: Si ejecutas `npm start` dentro de `server`, la API estará disponible en `http://localhost:3001`.
-- **Despliegue con Docker**: Tras `docker compose up --build`, tanto el frontend compilado como la API se sirven juntos en `http://localhost:3001`.
+- **API en local**: Si ejecutas `npm start` dentro de `server`, la API estará disponible en `http://localhost:${FRONT_PORT}`.
+- **Despliegue con Docker**: Tras `docker compose up --build`, tanto el frontend compilado como la API se sirven juntos en `http://localhost:${FRONT_PORT}`.
 
 Si no funciona la dirección `http://localhost:5173`, obtén tu IP local con `ipconfig` en Windows o `ip addr`/`ifconfig` en Linux/Mac y sustituye `<IP_DEL_SERVIDOR>` por esa dirección.
 
@@ -223,7 +223,7 @@ Con estos pasos la aplicación queda lista para usarse tanto de forma tradiciona
 
 ## 2.4 Comprobación de puertos
 
-Si tras desplegar con Docker no puedes acceder a `http://localhost:3001`, comprueba que el contenedor esté
+Si tras desplegar con Docker no puedes acceder a `http://localhost:${FRONT_PORT}`, comprueba que el contenedor esté
 escuchando en dicho puerto:
 
 ```bash
@@ -233,7 +233,7 @@ docker compose ps
 Deberías ver una línea similar a:
 
 ```
-app  running 0.0.0.0:3001->3001/tcp
+app  running 0.0.0.0:${FRONT_PORT}->${FRONT_PORT}/tcp
 ```
 
 Si no aparece el puerto o el estado es `exited`, revisa los mensajes con:
@@ -242,20 +242,20 @@ Si no aparece el puerto o el estado es `exited`, revisa los mensajes con:
 docker compose logs app
 ```
 
-También puedes verificar desde el host que el puerto 3001 está a la escucha con:
+También puedes verificar desde el host que el puerto ${FRONT_PORT} está a la escucha con:
 
 ```bash
-ss -ltn '( sport = :3001 )'
+ss -ltn '( sport = :${FRONT_PORT} )'
 ```
 
 En Windows la alternativa es:
 
 ```powershell
-netstat -ano | findstr :3001
+netstat -ano | findstr :${FRONT_PORT}
 ```
 
 Si el puerto no está abierto, asegúrate de que `docker-compose.yml` tenga la directiva
-`"3001:3001"` en la sección `ports` del servicio `app` y vuelve a ejecutar:
+`"${FRONT_PORT}:${FRONT_PORT}"` en la sección `ports` del servicio `app` y vuelve a ejecutar:
 
 ```bash
 docker compose up --build
@@ -265,7 +265,7 @@ docker compose up --build
 
 El servidor Node ahora imprime información de entorno al iniciarse y registra
 cada petición HTTP mediante **morgan**. Si algo falla al acceder a
-`http://localhost:3001`, consulta los registros con:
+`http://localhost:${FRONT_PORT}`, consulta los registros con:
 
 ```bash
 docker compose logs app
@@ -277,7 +277,7 @@ Deberías ver líneas similares a:
 Starting server with environment: {...}
 Initializing database...
 Database initialized successfully
-Server running on port 3001
+Server running on port ${FRONT_PORT}
 ```
 
 Además aparecerá una línea por cada petición recibida, lo que te permitirá
@@ -285,7 +285,7 @@ comprobar si llega tráfico al contenedor.
 
 ## 2.6 Verificar la IP del servidor
 
-En algunos entornos acceder a `http://localhost:3001` o `http://localhost:5173`
+En algunos entornos acceder a `http://localhost:${FRONT_PORT}` o `http://localhost:5173`
 puede no funcionar. Si es tu caso, averigua la dirección IP local de la máquina
 que ejecuta la aplicación:
 
@@ -298,6 +298,6 @@ ip addr   # o bien ifconfig
 ```
 
 Utiliza esa IP en la barra de direcciones junto con el puerto correspondiente,
-por ejemplo `http://192.168.1.10:3001` para la API o `http://192.168.1.10:5173`
+por ejemplo `http://192.168.1.10:${FRONT_PORT}` para la API o `http://192.168.1.10:5173`
 para el servidor de desarrollo de Vite.
 

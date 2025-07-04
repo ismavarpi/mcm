@@ -20,5 +20,7 @@ WORKDIR /app
 COPY --from=build-server /app ./
 COPY --from=build-web /app/client/dist ./public
 ENV NODE_ENV=production
-EXPOSE 3001
+ARG FRONT_PORT=3001
+ENV FRONT_PORT=$FRONT_PORT
+EXPOSE ${FRONT_PORT}
 CMD ["node", "index.js"]
