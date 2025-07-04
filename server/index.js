@@ -3,13 +3,22 @@ const dotenv = require('dotenv');
 // Load variables for local development. In Docker, the environment is provided
 // via the `env_file` option in docker-compose.yml.
 dotenv.config({ path: path.join(__dirname, '.env') });
-console.log('Environment DB_USER:', process.env.DB_USER);
-console.log('Environment DB_PASSWORD:', process.env.DB_PASSWORD);
+console.log('Starting server with environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DB_HOST: process.env.DB_HOST,
+  DB_PORT: process.env.DB_PORT,
+  DB_NAME: process.env.DB_NAME,
+  DB_USER: process.env.DB_USER,
+});
 const { app, db } = require('./app');
+
+console.log('Initializing database...');
 
 db.initDatabase()
   .then(() => {
-    app.listen(3001, () => console.log('Server running on port 3001'));
+    console.log('Database initialized successfully');
+    const server = app.listen(3001, () => console.log('Server running on port 3001'));
+    server.on('error', err => console.error('Server error:', err));
   })
   .catch(err => {
     console.error('Unable to start server:', err);

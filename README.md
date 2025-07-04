@@ -251,3 +251,25 @@ Si el puerto no está abierto, asegúrate de que `docker-compose.yml` tenga la d
 docker compose up --build
 ```
 
+## 2.5 Registros de depuración
+
+El servidor Node ahora imprime información de entorno al iniciarse y registra
+cada petición HTTP mediante **morgan**. Si algo falla al acceder a
+`http://localhost:3001`, consulta los registros con:
+
+```bash
+docker compose logs app
+```
+
+Deberías ver líneas similares a:
+
+```
+Starting server with environment: {...}
+Initializing database...
+Database initialized successfully
+Server running on port 3001
+```
+
+Además aparecerá una línea por cada petición recibida, lo que te permitirá
+comprobar si llega tráfico al contenedor.
+
