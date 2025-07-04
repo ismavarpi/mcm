@@ -166,14 +166,12 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
    git clone <URL_DEL_REPOSITORIO> mcm
    cd mcm
    ```
-3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Es necesario
-   generar dos archivos: uno en la raíz para Docker Compose (`.env`) y otro en
-   `server/.env` para ejecutar la API de forma independiente. Ambos incluyen
-   ahora las variables que necesita el contenedor de MariaDB (`MYSQL_*`) junto
-   a las variables usadas por la aplicación (`DB_*`):
+3. Copiar el archivo de ejemplo de variables de entorno y editarlo. Sólo es
+   necesario un archivo `.env` en la raíz para Docker Compose y para ejecutar la
+   API de forma independiente. Incluye las variables que necesita el contenedor
+   de MariaDB (`MYSQL_*`) junto a las usadas por la aplicación (`DB_*`):
    ```bash
-   cp server/.env.example .env
-   cp server/.env.example server/.env
+   cp .env.example .env
    # Establece en DB_PASSWORD la misma contraseña empleada al crear el usuario
    # mcm. Docker Compose usará estas variables automáticamente. Usa siempre el
    # nombre del servicio "db" como DB_HOST cuando ejecutes Docker Compose. Si la

@@ -1,8 +1,8 @@
 const path = require('path');
 const dotenv = require('dotenv');
-// Load variables for local development. In Docker, the environment is provided
-// via the `env_file` option in docker-compose.yml.
-dotenv.config({ path: path.join(__dirname, '.env') });
+// Load environment variables from the root .env file. Docker Compose also uses
+// this file via the `env_file` option so all values are defined only once.
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 console.log('Starting server with environment:', {
   NODE_ENV: process.env.NODE_ENV,
   DB_HOST: process.env.DB_HOST,

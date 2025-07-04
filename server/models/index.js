@@ -1,10 +1,10 @@
 const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
 const dotenv = require('dotenv');
-// Explicitly load the environment file if present. Docker containers will
-// receive the variables via the `env_file` option, so this is mainly for
-// local development.
-dotenv.config({ path: path.join(__dirname, '.env') });
+// Load the shared environment variables from the root of the project. Docker
+// Compose uses this same file, so configuration is centralized in a single
+// location.
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const dbHost = process.env.DB_HOST
   || (process.env.NODE_ENV === 'production' ? 'db' : 'localhost');
