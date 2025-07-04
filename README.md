@@ -77,7 +77,9 @@ Esta guía explica cómo poner en marcha la aplicación desde cero en un servido
    cd client
    npm run dev
    ```
- React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:5173` (puerto por defecto de Vite) con recarga automática.
+React abrirá un servidor de desarrollo accesible desde otras máquinas en `http://<IP_DEL_SERVIDOR>:5173` (puerto por defecto de Vite) con recarga automática.
+Si al abrir `http://localhost:5173` no ves la aplicación, comprueba tu dirección IP local.
+En Windows puedes ejecutar `ipconfig` y en Linux o macOS `ip addr` o `ifconfig`. Utiliza la IP mostrada en la URL, por ejemplo `http://192.168.1.10:5173`.
   
 ## Despliegue definitivo
 
@@ -190,6 +192,7 @@ A continuación se describen todos los pasos necesarios para ejecutar la aplicac
 ## URLs de acceso
 
 - **Desarrollo con Vite**: Ejecuta `npm run dev` en la carpeta `client`. Por defecto, el frontend se servirá en `http://<IP_DEL_SERVIDOR>:5173` y proxyeará las peticiones a la API.
+  Si no funciona la dirección `http://localhost:5173`, obtén tu IP local con `ipconfig` en Windows o `ip addr`/`ifconfig` en Linux/Mac y sustituye `<IP_DEL_SERVIDOR>` por esa dirección.
 - **API en local**: Si ejecutas `npm start` dentro de `server`, la API estará disponible en `http://localhost:3001`.
 - **Despliegue con Docker**: Tras `docker compose up --build`, tanto el frontend compilado como la API se sirven juntos en `http://localhost:3001`.
 
@@ -272,4 +275,22 @@ Server running on port 3001
 
 Además aparecerá una línea por cada petición recibida, lo que te permitirá
 comprobar si llega tráfico al contenedor.
+
+## 2.6 Verificar la IP del servidor
+
+En algunos entornos acceder a `http://localhost:3001` o `http://localhost:5173`
+puede no funcionar. Si es tu caso, averigua la dirección IP local de la máquina
+que ejecuta la aplicación:
+
+```bash
+# En Windows
+ipconfig
+
+# En Linux o macOS
+ip addr   # o bien ifconfig
+```
+
+Utiliza esa IP en la barra de direcciones junto con el puerto correspondiente,
+por ejemplo `http://192.168.1.10:3001` para la API o `http://192.168.1.10:5173`
+para el servidor de desarrollo de Vite.
 
