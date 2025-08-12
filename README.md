@@ -1,3 +1,8 @@
+---
+title: 'Introducción'
+description: 'Resumen general del proyecto.'
+---
+
 # Despliegue de la aplicación MCM en un servidor Linux
 
 Esta guía explica cómo poner en marcha la aplicación desde cero en un servidor Linux. Los ejemplos asumen una distribución basada en Debian/Ubuntu y permisos de administrador.
