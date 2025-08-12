@@ -69,7 +69,8 @@ Explica en 3–5 frases qué problema resuelve este caso de uso, para qué perfi
 2) Acepta propuesta de especialidad/centro
 3) Selecciona primer hueco disponible
 
-**Respuesta esperada (salida del sistema):*
+**Respuesta esperada (salida del sistema):**
+```json
 {
   "appointment_id": "A-55021",
   "center_id": "C-045",
@@ -77,6 +78,7 @@ Explica en 3–5 frases qué problema resuelve este caso de uso, para qué perfi
   "status": "confirmed",
   "summary": "Cita confirmada"
 }
+```
 
 **Notas:**
 - Debe cumplir R1 (priorizar centro preferido) y R2 (mostrar 3 huecos).
