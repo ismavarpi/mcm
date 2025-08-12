@@ -53,36 +53,7 @@ Explica en 3–5 frases qué problema resuelve este caso de uso, para qué perfi
 
 > Los copilotos aprenden rápido con ejemplos claros. Mantén este formato.
 
-### Ejemplo 2 — path alternativo (vincula a CA-01, CA-03)
-**Input (contexto):**
-```json
-{
-  "patient_id": "P-9981",
-  "preferences": { "center_id": "C-045" },
-  "history": { "last_specialties": ["MED-FAM"] }
-}
-
-**Acción del usuario:**
-
-1) Abre "Cita rápida"
-2) Acepta propuesta de especialidad/centro
-3) Selecciona primer hueco disponible
-
-**Respuesta esperada (salida del sistema):*
-{
-  "appointment_id": "A-55021",
-  "center_id": "C-045",
-  "start": "2025-09-03T10:30:00Z",
-  "status": "confirmed",
-  "summary": "Cita confirmada"
-}
-
-**Notas:**
-- Debe cumplir R1 (priorizar centro preferido) y R2 (mostrar 3 huecos).
-- Traza con CA-01, CA-03.
-
-
-### Ejemplo 1 — Happy path (vincula a CA-01, CA-03)
+### Ejemplo 1 — happy path (vincula a CA-01, CA-03)
 **Input (contexto):**
 ```json
 {
