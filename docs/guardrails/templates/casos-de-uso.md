@@ -61,6 +61,7 @@ Explica en 3–5 frases qué problema resuelve este caso de uso, para qué perfi
   "preferences": { "center_id": "C-045" },
   "history": { "last_specialties": ["MED-FAM"] }
 }
+```
 
 **Acción del usuario:**
 
